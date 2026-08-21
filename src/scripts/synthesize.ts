@@ -24,6 +24,12 @@ const SynthesisSchema = z.object({
     hook_type: z.string(),
     example: z.string(),
     why_it_works: z.string(),
+    /**
+     * The exact filenames this formula is drawn from. Counts are tallied from
+     * these rather than guessed by matching label text, so the W/L badge on a
+     * formula is auditable against the creatives it came from.
+     */
+    supporting_creatives: z.array(z.string()),
   })),
   winner_vs_mild: z.array(z.string()),
   hunt_for: z.array(z.object({
@@ -50,6 +56,8 @@ were shown — quote their hooks, name their formats, cite the specific ads.
 Rules that matter:
 - Rank hook formulas by how they actually performed in this data, not by what
   usually works in advertising. If a formula appears only among losers, say so.
+- supporting_creatives must list the exact filenames the formula is drawn from,
+  copied verbatim from the headings you were given. Never invent a filename.
 - winner_vs_mild must describe real differences between the winner group and the
   mild-winner group in THIS data. If the two groups look alike on some axis, do
   not manufacture a difference — fewer honest points beat a padded list.
@@ -62,9 +70,14 @@ Rules that matter:
   screen. Reason only from those fields when citing a loser, and say when a
   conclusion is limited by that. Do not import generic advertising advice, and
   do not describe a losing creative's footage as if you had seen it.
-- If the sample is too small to support a conclusion, say that plainly in the
-  relevant field instead of asserting a pattern. A thin sample honestly labelled
-  is far more useful than a confident pattern that is really noise.`
+- If the sample is too small to support a conclusion, say that plainly IN
+  ORDINARY ENGLISH in the relevant field — for example "Only five creatives have
+  been watched for this product and none are mild winners, so there is not yet
+  enough contrast to rank formulas." A thin sample honestly labelled is far more
+  useful than a confident pattern that is really noise.
+- Never emit filler such as "placeholder", "N/A", "TBD" or an empty string. Every
+  field must contain either a real finding or a plain sentence explaining why one
+  cannot be drawn yet.`
 
 interface Row {
   product_key: string; product_name: string; task_name: string; category: string
@@ -104,6 +117,14 @@ async function main() {
     order by t.product_name, t.category, c.filename
   `)) as unknown as (Row & { list_id: string })[]
 
+  // How many creatives have been watched per list, so coverage can be reported.
+  const watchedRows = (await db.execute(sql`
+    select t.list_id, count(c.id)::int as n
+    from creatives c join tasks t on t.id = c.task_id
+    group by t.list_id
+  `)) as unknown as { list_id: string; n: number }[]
+  const watchedCounts = new Map(watchedRows.map((w) => [w.list_id, Number(w.n)]))
+
   const byProduct = new Map<string, (Row & { list_id: string })[]>()
   for (const r of rows) {
     const key = LIST_TO_KEY[r.list_id] ?? 'ot'
@@ -118,7 +139,13 @@ async function main() {
     const name = items[0].product_name
     const losers = loserRows.filter((l) => l.list_id === items[0].list_id)
 
-    console.log(`\n${name}: ${winners.length} winner · ${mild.length} mild creatives watched · ${losers.length} losers from brief only`)
+    const watchedTotal = watchedCounts.get(items[0].list_id) ?? 0
+    const enriched = winners.length + mild.length
+    console.log(`\n${name}: ${winners.length} winner · ${mild.length} mild creatives read in depth · ${losers.length} losers from brief only`)
+    if (watchedTotal > enriched) {
+      console.log(`  ⚠ only ${enriched} of ${watchedTotal} watched creatives have been enriched — this synthesis sees a fraction of the data`)
+      console.log(`     run: npm run enrich -- --product="${name}"`)
+    }
     if (winners.length + mild.length === 0) {
       console.log('  skipped — nothing has won yet')
       continue
@@ -169,14 +196,40 @@ async function main() {
     if (!res.parsed_output) { console.log('  ✗ no parsable synthesis'); continue }
     const s = res.parsed_output
 
-    // Attach the real record to each hook formula so the ranking is auditable.
+    // Tally each formula from the creatives it actually names. Matching on
+    // label text was hopeless — "Gendered identity qualifier…" shares no word
+    // with any hook_mechanism — and every badge read 0W/0L as a result.
+    // The model cites creatives the way they appear in the brief — sometimes
+    // "13371-2", sometimes "13371-2.mp4" — so match on a normalised key and
+    // fall back to the task name.
+    const norm = (v: string) =>
+      v.toLowerCase().replace(/\.(mp4|mov|m4v|webm|jpe?g|png)$/i, '').replace(/\s+/g, ' ').trim()
+
+    const byName = new Map<string, string>()
+    for (const i of items) {
+      byName.set(norm(i.filename), i.category)
+      if (!byName.has(norm(i.task_name))) byName.set(norm(i.task_name), i.category)
+    }
+    for (const l of losers) byName.set(norm(String(l.task_name)), 'loser')
+
     const formulas = s.hook_formulas.map((f) => {
-      const matching = items.filter((i) =>
-        i.hook_mechanism.toLowerCase().includes(f.hook_type.toLowerCase().split(/[\s/]/)[0]))
+      let wins = 0, losses = 0, unmatched = 0
+      for (const raw of f.supporting_creatives) {
+        const category = byName.get(norm(raw))
+        if (category) {
+          if (category === 'loser') losses++
+          else wins++
+        } else {
+          unmatched++
+        }
+      }
+      if (unmatched) {
+        const names = f.supporting_creatives.filter((n) => !byName.has(norm(n)))
+        console.log(`    · formula ${f.rank} cites ${unmatched} creative(s) not in this set: ${names.join(', ')}`)
+      }
       return {
-        rank: f.rank, hookType: f.hook_type, example: f.example, whyItWorks: f.why_it_works,
-        wins: matching.filter((m) => m.category !== 'loser').length,
-        losses: matching.filter((m) => m.category === 'loser').length,
+        rank: f.rank, hookType: f.hook_type, example: f.example,
+        whyItWorks: f.why_it_works, wins, losses,
       }
     })
 
