@@ -95,10 +95,16 @@ export default function Dashboard({ snapshot }: { snapshot: Snapshot }) {
     () => (filter === 'all' ? snapshot.creatives : snapshot.creatives.filter((c) => c.product === filter)),
     [filter, snapshot.creatives],
   )
-  const winners = useMemo(
-    () => shown.filter((c) => c.status === 'win' || c.status === 'mild' || c.status === 'scale'),
+  // An analysed task expands into one row per creative file, so counting rows
+  // would over-report winners. Count distinct tasks.
+  const winnerTasks = useMemo(
+    () => new Set(
+      shown.filter((c) => c.status === 'win' || c.status === 'mild' || c.status === 'scale')
+        .map((c) => c.taskId),
+    ).size,
     [shown],
   )
+  const analysedRows = useMemo(() => shown.filter((c) => c.analysed).length, [shown])
 
   // Section nav indicator follows the section in the middle of the viewport.
   useEffect(() => {
@@ -256,14 +262,18 @@ export default function Dashboard({ snapshot }: { snapshot: Snapshot }) {
         <section id="s3">
           <div className="sec-hdr rv">
             <h2 className="sec-ttl">Winning Creatives</h2>
-            <span className="sec-sub">{snapshot.totals.tasks} tasks</span>
+            <span className="sec-sub">
+              {snapshot.totals.analysed} of {snapshot.totals.winners} winners verified against their files
+            </span>
           </div>
           <div className="filt rv">
             {FILTERS.map((f) => (
               <button key={f.key} className={`fb${filter === f.key ? ' on' : ''}`}
                 onClick={() => setFilter(f.key)}>{f.label}</button>
             ))}
-            <span className="fc">{winners.length} winners of {shown.length} shown</span>
+            <span className="fc">
+              {winnerTasks} winner tasks · {analysedRows} creatives verified · {shown.length} rows
+            </span>
           </div>
           <div className="t-hd">
             <div className="t-hd-c" />
@@ -276,7 +286,7 @@ export default function Dashboard({ snapshot }: { snapshot: Snapshot }) {
           <div>
             {shown.length === 0 && <div className="empty">No creatives synced yet. Run <code>npm run sync</code>.</div>}
             {shown.map((c) => (
-              <div key={c.taskId} className="t-row" tabIndex={0} role="button"
+              <div key={c.creativeId ?? c.taskId} className="t-row" tabIndex={0} role="button"
                 aria-label={`${c.name} — ${c.statusLabel}`}
                 onClick={() => setPanel(c)}
                 onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setPanel(c) } }}>
