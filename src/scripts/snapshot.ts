@@ -106,20 +106,23 @@ async function main() {
 
   // Format win rates on the RESOLVED value — observed where the creative
   // settles it, ClickUp's claim otherwise.
-  const buckets = new Map<string, { wins: number; losses: number; product: ProductKey }>()
+  // Bucket on a normalised key so "Hook + Offer" and "Hook+Offer" merge, but
+  // display the label as it was actually written — re-casing a lowercased key
+  // turns UGC into "Ugc" and How-To into "How-to".
+  const buckets = new Map<string, { wins: number; losses: number; product: ProductKey; label: string }>()
   for (const c of creatives) {
     if (c.status !== 'loss' && c.status !== 'win' && c.status !== 'mild' && c.status !== 'scale') continue
     const label = c.creativeStructure?.observed ?? c.creativeStructure?.claimed
     if (!label) continue
-    const key = `${c.product}::${label.toLowerCase().replace(/\s*\+\s*/g, ' + ').trim()}`
-    const b = buckets.get(key) ?? { wins: 0, losses: 0, product: c.product }
+    const key = `${c.product}::${label.toLowerCase().replace(/\s*\+\s*/g, ' + ').replace(/\s*\/\s*/g, ' / ').trim()}`
+    const b = buckets.get(key) ?? { wins: 0, losses: 0, product: c.product, label: label.trim() }
     if (c.status === 'loss') b.losses++
     else b.wins++
     buckets.set(key, b)
   }
 
   const formats: FormatRow[] = [...buckets.entries()].map(([key, b]) => {
-    const label = key.split('::')[1].replace(/(^|\s|\/)([a-z])/g, (_, p, ch) => p + ch.toUpperCase())
+    const label = b.label
     const tested = b.wins + b.losses
     return {
       key, code: label.slice(0, 2).toUpperCase(), label,

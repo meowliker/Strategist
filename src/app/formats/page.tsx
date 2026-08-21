@@ -1,10 +1,39 @@
 import { loadSnapshot } from '../../lib/data/load'
 import { readProduct, selectProduct } from '../../lib/data/select'
+import type { FormatRow } from '../../lib/data/types'
 
 export const dynamic = 'force-dynamic'
 
 /** Below this the sample is too thin to read anything into. */
 const MIN_SAMPLE = 4
+
+function rateClass(rate: number | null) {
+  if (rate === null) return ''
+  return rate >= 0.7 ? 'hi' : rate >= 0.4 ? 'mid' : 'lo'
+}
+
+function Card({ f, thin }: { f: FormatRow; thin?: boolean }) {
+  const pct = f.winRate === null ? null : Math.round(f.winRate * 100)
+  return (
+    <div className={`fcard ${f.product}${thin ? ' thin' : ''}`}>
+      <div className="fc-top">
+        <span className="fc-name">{f.label}</span>
+        <span className={`fc-rate ${rateClass(f.winRate)}`}>{pct === null ? '—' : `${pct}%`}</span>
+      </div>
+      <div className="fc-meta">{f.description}</div>
+      {!thin && (
+        <div className="fc-bar">
+          {f.wins > 0 && <div className="fc-bar-w" style={{ flex: f.wins }} />}
+          {f.losses > 0 && <div className="fc-bar-l" style={{ flex: f.losses }} />}
+        </div>
+      )}
+      <div className="fc-legend">
+        <span className="fc-lg"><span className="fc-lg-d w" />{f.wins} won</span>
+        <span className="fc-lg"><span className="fc-lg-d l" />{f.losses} lost</span>
+      </div>
+    </div>
+  )
+}
 
 export default async function Formats({
   searchParams,
@@ -25,49 +54,26 @@ export default async function Formats({
         </p>
       </div>
 
-      <div className="ar-list">
-        {solid.length === 0 && (
-          <div className="empty">
-            No format has {MIN_SAMPLE} or more decided creatives yet in this view.
-          </div>
-        )}
-        {solid.map((f) => (
-          <div key={f.key} className={`ar ${f.product}`}>
-            <div className="ar-main">
-              <div className="ar-code">{f.code}</div>
-              <div className="ar-body">
-                <div className="ar-name">{f.label}</div>
-                <div className="ar-hook">{f.description}</div>
-              </div>
-              <div className="ar-right">
-                <div className="ar-cnt">{f.winRate === null ? '—' : `${Math.round(f.winRate * 100)}%`}</div>
-                <div className="ar-sts">
-                  <div className="ar-st"><div className="ar-st-d win" />{f.wins} won</div>
-                  <div className="ar-st"><div className="ar-st-d loss" />{f.losses} lost</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
+      {solid.length === 0 ? (
+        <div className="empty">
+          No format has {MIN_SAMPLE} or more decided creatives yet in this view.
+        </div>
+      ) : (
+        <div className="fgrid">
+          {solid.map((f) => <Card key={f.key} f={f} />)}
+        </div>
+      )}
 
       {thin.length > 0 && (
         <>
           <div className="sec-hdr">
-            <h2 className="sec-ttl" style={{ fontSize: 24 }}>Too thin to judge</h2>
-            <span className="sec-sub">fewer than {MIN_SAMPLE} decided creatives</span>
+            <h2 className="sec-ttl" style={{ fontSize: 22 }}>Too thin to judge</h2>
+            <span className="sec-sub">
+              {thin.length} formats with fewer than {MIN_SAMPLE} decided creatives
+            </span>
           </div>
-          <div className="d-list">
-            {thin.map((f, i) => (
-              <div key={f.key} className="d-it">
-                <div className="d-n">{String(i + 1).padStart(2, '0')}</div>
-                <div className={`d-stripe ${f.product}`} />
-                <div className="d-nm">{f.label}</div>
-                <div className="d-fmt">{f.wins}W / {f.losses}L</div>
-                <div className="d-ds">{f.description}</div>
-                <div />
-              </div>
-            ))}
+          <div className="fgrid">
+            {thin.map((f) => <Card key={f.key} f={f} thin />)}
           </div>
         </>
       )}
