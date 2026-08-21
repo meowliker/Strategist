@@ -17,9 +17,11 @@ import { extractFrames } from '../lib/media/frames'
 import { extractAudio, transcribe } from '../lib/media/transcribe'
 import { analyseBlind, MODEL, PROMPT_VERSION } from '../lib/analysis/blind'
 import { compareAll, countMismatches, FIELD_SPECS } from '../lib/analysis/verdict'
+import { PRODUCTS } from '../lib/products'
 
 const limit = Number(process.argv.find((a) => a.startsWith('--limit='))?.split('=')[1] ?? '0')
 const only = process.argv.find((a) => a.startsWith('--task='))?.split('=')[1]
+const productArg = process.argv.find((a) => a.startsWith('--product='))?.split('=')[1]
 const skipTranscribe = process.argv.includes('--no-transcribe')
 
 // Opus 5 pricing, $ per token.
@@ -44,6 +46,17 @@ async function main() {
       isNotNull(tasks.driveLink),
     ))
 
+  if (productArg) {
+    const want = PRODUCTS.find((p) => p.listId === productArg || p.name.toLowerCase().includes(productArg.toLowerCase()))
+    if (!want) {
+      console.error(`Unknown product "${productArg}". Known: ${PRODUCTS.map((p) => p.name).join(', ')}`)
+      process.exit(1)
+    }
+    winners = winners.filter((w) => w.product === want.name)
+    console.log(`Scoped to ${want.name}\n`)
+  }
+  // Deterministic order so a resumed run is predictable, newest first.
+  winners.sort((a, b) => b.name.localeCompare(a.name))
   if (only) winners = winners.filter((w) => w.name === only || w.id === only)
   if (limit) winners = winners.slice(0, limit)
 

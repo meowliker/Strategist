@@ -17,6 +17,7 @@ import { extractFrames } from '../lib/media/frames'
 import { analyseDeep, DEEP_MODEL, DEEP_PROMPT_VERSION } from '../lib/analysis/deep'
 
 const limit = Number(process.argv.find((a) => a.startsWith('--limit='))?.split('=')[1] ?? '0')
+const productArg = process.argv.find((a) => a.startsWith('--product='))?.split('=')[1]
 const COST_IN = 5 / 1_000_000
 const COST_OUT = 25 / 1_000_000
 
@@ -42,6 +43,10 @@ async function main() {
     order by t.product_name, c.filename
   `)) as unknown as Pending[]
 
+  if (productArg) {
+    pending = pending.filter((p) => p.product.toLowerCase().includes(productArg.toLowerCase()))
+    console.log(`Scoped to ${productArg}`)
+  }
   if (limit) pending = pending.slice(0, limit)
   console.log(`Enriching ${pending.length} creatives\n`)
 
