@@ -361,3 +361,51 @@ button{font-family:inherit}
 .dv-why{padding:8px 12px 10px 82px;font-size:11px;line-height:1.5;color:var(--ink2);
   font-style:italic;border-top:1px solid var(--brdl);background:var(--surf2)}
 .dv-conf{font-size:9px;font-weight:700;color:var(--ink3);font-variant-numeric:tabular-nums}
+
+/* ── PRODUCT SWITCHER ── */
+.psw{position:relative}
+.psw-btn{appearance:none;border:1px solid var(--brd);background:var(--surf);cursor:none;
+  font-size:12px;font-weight:600;color:var(--ink);padding:5px 12px;border-radius:3px;
+  display:flex;align-items:center;gap:8px;transition:all .12s}
+.psw-btn:hover{border-color:var(--ink2)}
+.psw-car{font-size:9px;color:var(--ink3)}
+.psw-menu{position:absolute;top:calc(100% + 6px);left:0;min-width:190px;z-index:520;
+  background:var(--surf);border:1px solid var(--brd);border-radius:4px;
+  box-shadow:0 10px 34px rgba(0,0,0,.14);overflow:hidden;padding:4px}
+.psw-item{appearance:none;border:none;background:transparent;cursor:none;width:100%;
+  text-align:left;font-size:12px;color:var(--ink2);padding:8px 10px;border-radius:3px;
+  display:flex;align-items:center;justify-content:space-between;gap:10px;transition:all .1s}
+.psw-item:hover{background:var(--surf2);color:var(--ink)}
+.psw-item.on{color:var(--ink);font-weight:600}
+.psw-tick{color:var(--g);font-size:11px}
+
+/* ── PAGE HEAD (compact, replaces the full-viewport hero on inner pages) ── */
+.phead{padding:52px 48px 28px;border-bottom:1px solid var(--brd)}
+.phead-ey{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ink3);margin-bottom:10px}
+.phead-ttl{font-family:Georgia,serif;font-size:clamp(30px,4vw,52px);font-weight:700;
+  letter-spacing:-.025em;line-height:1.02;color:var(--ink)}
+.phead-ttl em{font-style:italic;font-weight:400;color:var(--ink2)}
+.phead-sub{font-size:13px;color:var(--ink2);margin-top:12px;max-width:620px;line-height:1.55}
+
+/* ── STAT BAND ── */
+.band{display:flex;gap:0;border-bottom:1px solid var(--brd);flex-wrap:wrap}
+.band-c{flex:1;min-width:150px;padding:22px 28px;border-right:1px solid var(--brdl)}
+.band-c:last-child{border-right:none}
+.band-n{font-family:Georgia,serif;font-size:38px;font-weight:700;line-height:1;
+  letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.band-n.win{color:var(--hh-c)}.band-n.loss{color:var(--ig)}.band-n.flag{color:var(--ca)}
+.band-l{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--ink3);margin-top:6px}
+
+/* ── CARD GRID (overview shortcuts) ── */
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+  gap:1px;background:var(--brdl);border-bottom:1px solid var(--brd)}
+.card{background:var(--bg);padding:26px 28px 30px;transition:background .14s;cursor:none;
+  display:flex;flex-direction:column;gap:8px;min-height:150px}
+.card:hover{background:var(--surf)}
+.card-n{font-size:9px;font-weight:800;letter-spacing:.12em;color:var(--ink3)}
+.card-t{font-family:Georgia,serif;font-size:22px;font-weight:700;letter-spacing:-.01em}
+.card-d{font-size:12px;color:var(--ink2);line-height:1.5;flex:1}
+.card-go{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink3)}
+.card:hover .card-go{color:var(--ink)}

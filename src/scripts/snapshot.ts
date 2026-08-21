@@ -11,6 +11,7 @@ import { sql } from 'drizzle-orm'
 import { db } from '../db/client'
 import type { Snapshot, CreativeRow, FormatRow, KeywordRow, ProductKey, StatusKey, DualValue, VerdictKey } from '../lib/data/types'
 import { PRODUCT_LABEL, STATUS_LABEL } from '../lib/data/types'
+import { computeTrust } from '../lib/data/trust'
 
 const LIST_TO_KEY: Record<string, ProductKey> = {
   '901613416500': 'hh', '901613119887': 'ad', '901613035012': 'ca', '901615920553': 'ig',
@@ -26,9 +27,9 @@ interface Row {
   duration_sec: number | null; cuts_per_minute: number | null
   hook_text: string | null
   c_angle: string | null; c_persona: string | null; c_style: string | null
-  c_structure: string | null; c_hook: string | null; c_adtype: string | null
+  c_structure: string | null; c_hook: string | null; c_adtype: string | null; c_funnel: string | null
   o_angle: string | null; o_persona: string | null; o_style: string | null
-  o_structure: string | null; o_hook: string | null; o_adtype: string | null
+  o_structure: string | null; o_hook: string | null; o_adtype: string | null; o_funnel: string | null
   evidence: Record<string, string> | null
   confidence: Record<string, number> | null
   verdicts: Record<string, string> | null
@@ -56,9 +57,11 @@ async function main() {
            t.claimed_angle as c_angle, t.claimed_persona as c_persona,
            t.claimed_production_style as c_style, t.claimed_creative_structure as c_structure,
            t.claimed_hook_type as c_hook, t.claimed_ad_type as c_adtype,
+           t.claimed_funnel as c_funnel,
            o.observed_angle_signal as o_angle, o.observed_persona_signal as o_persona,
            o.observed_production_style as o_style, o.observed_creative_structure as o_structure,
            o.observed_hook_type as o_hook, o.observed_ad_type as o_adtype,
+           o.observed_funnel as o_funnel,
            o.evidence, o.confidence,
            (select jsonb_object_agg(v.field, v.verdict::text) from verdicts v where v.creative_id = c.id) as verdicts
     from tasks t
@@ -93,6 +96,8 @@ async function main() {
       productionStyle: dual(r.c_style, r.o_style, 'production_style', r.evidence, r.confidence, vd),
       creativeStructure: dual(r.c_structure, r.o_structure, 'creative_structure', r.evidence, r.confidence, vd),
       hookType: dual(r.c_hook, r.o_hook, 'hook_type', r.evidence, r.confidence, vd),
+      funnel: dual(r.c_funnel, r.o_funnel, 'funnel', r.evidence, r.confidence, vd),
+      adTypeDual: dual(r.c_adtype, r.o_adtype, 'ad_type', r.evidence, r.confidence, vd),
       verdicts: [],
       mismatchCount: vd ? Object.values(vd).filter((v) => v === 'mismatch').length : 0,
       analysed,
@@ -142,31 +147,7 @@ async function main() {
     }
   })
 
-  const trustRows = (await db.execute(sql`
-    select field, verdict::text as verdict, count(*)::int as n
-    from verdicts group by field, verdict
-  `)) as unknown as { field: string; verdict: string; n: number }[]
-
-  const trustMap = new Map<string, { agree: number; total: number }>()
-  for (const t of trustRows) {
-    // "Agreement" counts only fields where the creative could settle the
-    // question. `differs` is excluded from both halves — two defensible
-    // readings say nothing about whether ClickUp is accurate.
-    if (t.verdict === 'differs' || t.verdict === 'unverifiable') continue
-    const e = trustMap.get(t.field) ?? { agree: 0, total: 0 }
-    e.total += t.n
-    if (t.verdict === 'match') e.agree += t.n
-    trustMap.set(t.field, e)
-  }
-
-  const LABEL: Record<string, string> = {
-    ad_type: 'Photo / Video', production_style: 'Production Style',
-    creative_structure: 'Creative Structure', hook_type: 'Hook Type', funnel: 'Funnel',
-  }
-  const trust = [...trustMap.entries()]
-    .filter(([f]) => LABEL[f])
-    .map(([field, v]) => ({ field, label: LABEL[field], agree: v.agree, total: v.total }))
-    .sort((a, b) => b.total - a.total)
+  const trust = computeTrust(creatives)
 
   const distinctTasks = new Set(creatives.map((c) => c.taskId))
   const analysedTasks = new Set(creatives.filter((c) => c.analysed).map((c) => c.taskId))
