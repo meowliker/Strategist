@@ -17,9 +17,10 @@ const initials = (n: string | null) =>
 
 export default function CreativesTable({ snapshot }: { snapshot: Snapshot }) {
   const [view, setView] = useState<View>('watched')
+  const [query, setQuery] = useState('')
   const [openId, setOpenId] = useState<string | null>(null)
 
-  const rows = useMemo(() => {
+  const inView = useMemo(() => {
     if (view === 'watched') return snapshot.creatives.filter((c) => c.analysed)
     if (view === 'winners') {
       return snapshot.creatives.filter(
@@ -28,6 +29,25 @@ export default function CreativesTable({ snapshot }: { snapshot: Snapshot }) {
     }
     return snapshot.creatives
   }, [view, snapshot.creatives])
+
+  /**
+   * Free-text search across the fields someone would actually recall: the file,
+   * the task it came from, either reading of the angle, and who owned it.
+   * Terms are ANDed so "adhd hook" narrows rather than widens.
+   */
+  const rows = useMemo(() => {
+    const terms = query.toLowerCase().split(/\s+/).filter(Boolean)
+    if (!terms.length) return inView
+    return inView.filter((c) => {
+      const hay = [
+        c.name, c.taskName, c.assignee, c.changedLever,
+        c.angle?.claimed, c.angle?.observed,
+        c.persona?.claimed, c.persona?.observed,
+        c.statusLabel, c.productName,
+      ].filter(Boolean).join(' ').toLowerCase()
+      return terms.every((t) => hay.includes(t))
+    })
+  }, [inView, query])
 
   const VIEWS: { key: View; label: string; count: number }[] = [
     { key: 'watched', label: 'Watched', count: snapshot.creatives.filter((c) => c.analysed).length },
@@ -49,7 +69,22 @@ export default function CreativesTable({ snapshot }: { snapshot: Snapshot }) {
           <button key={v.key} className={`fb${view === v.key ? ' on' : ''}`}
             onClick={() => setView(v.key)}>{v.label} · {v.count}</button>
         ))}
-        <span className="fc">{rows.length} shown</span>
+        <div className="srch">
+          <input
+            className="srch-in"
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search task, file, angle, owner…"
+            aria-label="Search creatives"
+          />
+          {query && (
+            <button className="srch-x" onClick={() => setQuery('')} aria-label="Clear search">✕</button>
+          )}
+        </div>
+        <span className="fc">
+          {rows.length} shown{query && inView.length !== rows.length ? ` of ${inView.length}` : ''}
+        </span>
       </div>
 
       <div className="t-hd">
@@ -64,7 +99,9 @@ export default function CreativesTable({ snapshot }: { snapshot: Snapshot }) {
       <div>
         {rows.length === 0 && (
           <div className="empty">
-            Nothing here yet. Creatives appear once their video file has been watched.
+            {query
+              ? <>No creative matches &ldquo;{query}&rdquo; in this view. Try the All tasks tab, or clear the search.</>
+              : 'Nothing here yet. Creatives appear once their video file has been watched.'}
           </div>
         )}
         {rows.map((c) => {

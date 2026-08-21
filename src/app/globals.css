@@ -568,3 +568,27 @@ button{font-family:inherit}
   .mdl-body{grid-template-columns:1fr}
   .mdl-left{border-right:none;border-bottom:1px solid var(--brd)}
 }
+
+/* ── SECTION LABEL WITH AN ACTION ── */
+.mdl-sec-row{display:flex;align-items:center;justify-content:space-between;gap:12px;
+  margin-bottom:8px}
+.mdl-sec-row .mdl-sec-l{margin-bottom:0}
+.mdl-copy{appearance:none;cursor:none;font-size:10px;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--ink2);background:var(--surf);
+  border:1px solid var(--brd);padding:4px 10px;border-radius:3px;transition:all .12s;
+  display:inline-flex;align-items:center;gap:6px;flex-shrink:0}
+.mdl-copy:hover{color:var(--ink);border-color:var(--ink2);background:var(--surf2)}
+.mdl-copy:disabled{opacity:.6}
+.mdl-copy.done{color:var(--hh-c);border-color:var(--hh-c)}
+
+/* ── SEARCH ── */
+.srch{position:relative;margin-left:14px;flex:1;max-width:300px;display:flex;align-items:center}
+.srch-in{width:100%;appearance:none;font-family:inherit;font-size:12px;color:var(--ink);
+  background:var(--surf);border:1px solid var(--brd);border-radius:3px;
+  padding:6px 26px 6px 10px;outline:none;transition:border-color .12s;cursor:none}
+.srch-in::placeholder{color:var(--ink3)}
+.srch-in:focus{border-color:var(--ink2)}
+.srch-in::-webkit-search-cancel-button{display:none}
+.srch-x{position:absolute;right:6px;appearance:none;border:none;background:transparent;
+  cursor:none;color:var(--ink3);font-size:11px;padding:2px 4px;transition:color .12s}
+.srch-x:hover{color:var(--ink)}

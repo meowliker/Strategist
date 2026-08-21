@@ -41,6 +41,71 @@ const TIER: Record<string, string> = {
 }
 const mmss = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`
 
+/**
+ * The voiceover as flowing prose, with the timestamps stripped.
+ *
+ * Whisper's own transcript is preferred — its segments are cut on pauses, not
+ * sentences, so rejoining them re-inserts spaces mid-sentence.
+ */
+function plainTranscript(d: Detail): string {
+  if (d.transcript?.trim()) return d.transcript.trim()
+  return (d.segments ?? []).map((s) => s.text.trim()).filter(Boolean).join(' ')
+}
+
+/**
+ * Copies text, falling back to a hidden textarea.
+ *
+ * The async Clipboard API is refused in a few ordinary situations — an insecure
+ * origin, a denied permission, a click the browser does not treat as user
+ * activation — and the textarea path still works in most of them.
+ */
+async function copyText(text: string): Promise<boolean> {
+  try {
+    await navigator.clipboard.writeText(text)
+    return true
+  } catch { /* fall through */ }
+
+  try {
+    const ta = document.createElement('textarea')
+    ta.value = text
+    ta.setAttribute('readonly', '')
+    ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;pointer-events:none'
+    document.body.appendChild(ta)
+    ta.select()
+    ta.setSelectionRange(0, text.length)
+    const ok = document.execCommand('copy')
+    document.body.removeChild(ta)
+    return ok
+  } catch {
+    return false
+  }
+}
+
+function CopyButton({
+  text, copied, setCopied,
+}: { text: string; copied: boolean; setCopied: (v: boolean) => void }) {
+  const [failed, setFailed] = useState(false)
+  if (!text) return null
+  return (
+    <button
+      className={`mdl-copy${copied ? ' done' : ''}`}
+      onClick={async () => {
+        if (await copyText(text)) {
+          setFailed(false); setCopied(true)
+          setTimeout(() => setCopied(false), 2000)
+        } else {
+          // Say so rather than appear to have worked.
+          setFailed(true)
+          setTimeout(() => setFailed(false), 2500)
+        }
+      }}
+      title="Copy the voiceover without timestamps"
+    >
+      {failed ? 'Copy blocked' : copied ? '✓ Copied' : 'Copy text'}
+    </button>
+  )
+}
+
 function Row({ label, field, d }: { label: string; field: string; d: Detail }) {
   const v = d.verdicts?.[field]
   if (!v || (!v.claimed && !v.observed)) return null
@@ -71,10 +136,11 @@ export default function CreativeModal({
   const [d, setD] = useState<Detail | null>(null)
   const [loading, setLoading] = useState(false)
   const [tab, setTab] = useState<'summary' | 'transcript' | 'compare'>('summary')
+  const [copied, setCopied] = useState(false)
 
   useEffect(() => {
     if (!creativeId) { setD(null); return }
-    setLoading(true); setTab('summary')
+    setLoading(true); setTab('summary'); setCopied(false)
     fetch(`/api/creative/${creativeId}`)
       .then((r) => (r.ok ? r.json() : null))
       .then(setD)
@@ -297,7 +363,10 @@ export default function CreativeModal({
                 <>
                   {d.segments && d.segments.length > 0 ? (
                     <div>
-                      <div className="mdl-sec-l">Voiceover, timestamped</div>
+                      <div className="mdl-sec-row">
+                        <div className="mdl-sec-l">Voiceover, timestamped</div>
+                        <CopyButton text={plainTranscript(d)} copied={copied} setCopied={setCopied} />
+                      </div>
                       <div className="mdl-tx" style={{ whiteSpace: 'normal' }}>
                         {d.segments.map((s, i) => (
                           <div className="mdl-seg" key={i}>
@@ -309,7 +378,10 @@ export default function CreativeModal({
                     </div>
                   ) : d.transcript ? (
                     <div>
-                      <div className="mdl-sec-l">Voiceover</div>
+                      <div className="mdl-sec-row">
+                        <div className="mdl-sec-l">Voiceover</div>
+                        <CopyButton text={plainTranscript(d)} copied={copied} setCopied={setCopied} />
+                      </div>
                       <div className="mdl-tx">{d.transcript}</div>
                     </div>
                   ) : (

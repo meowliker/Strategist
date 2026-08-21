@@ -82,6 +82,7 @@ async function main() {
       filename: r.filename ?? undefined,
       variantIndex: r.variant_index,
       name: r.filename ?? r.name,
+      taskName: r.name,
       url: r.url,
       product, productName: PRODUCT_LABEL[product],
       status, statusLabel: STATUS_LABEL[status],
