@@ -592,3 +592,43 @@ button{font-family:inherit}
 .srch-x{position:absolute;right:6px;appearance:none;border:none;background:transparent;
   cursor:none;color:var(--ink3);font-size:11px;padding:2px 4px;transition:color .12s}
 .srch-x:hover{color:var(--ink)}
+
+/* ── COLLAPSIBLE RESEARCH ROWS ── */
+.rl-bar{display:flex;align-items:center;gap:10px;padding:0 48px 18px;
+  border-bottom:1px solid var(--brd);flex-wrap:wrap}
+.rl-bar .srch{margin-left:0;max-width:340px}
+.rl-btn{appearance:none;cursor:none;font-size:10px;font-weight:700;letter-spacing:.07em;
+  text-transform:uppercase;color:var(--ink2);background:transparent;
+  border:1px solid var(--brd);padding:6px 12px;border-radius:3px;transition:all .12s}
+.rl-btn:hover{color:var(--ink);border-color:var(--ink2);background:var(--surf)}
+.rl-count{margin-left:auto;font-size:11px;color:var(--ink3);font-variant-numeric:tabular-nums}
+
+.rl-item{border-bottom:1px solid var(--brdl)}
+.rl-head{display:grid;grid-template-columns:3px 250px 92px minmax(0,1fr) 22px;
+  align-items:center;gap:14px;padding:13px 48px;cursor:none;transition:background .1s;
+  width:100%;background:transparent;border:none;text-align:left;font-family:inherit}
+.rl-head:hover{background:var(--surf)}
+.rl-head:focus-visible{outline:2px solid var(--g);outline-offset:-2px}
+.rl-stripe{width:3px;height:22px;border-radius:2px;align-self:center}
+.rl-stripe.win{background:var(--hh-c)}
+.rl-stripe.mild{background:#C9A83A}
+.rl-stripe.scale{background:var(--ink)}
+.rl-stripe.loss{background:var(--ig)}
+.rl-stripe.un{background:var(--ink3)}
+.rl-file{font-family:'SF Mono',Consolas,monospace;font-size:12.5px;font-weight:600;
+  color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rl-tier{font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--ink3)}
+.rl-mech{font-size:12px;color:var(--ink2);overflow:hidden;text-overflow:ellipsis;
+  white-space:nowrap}
+.rl-car{font-size:11px;color:var(--ink3);transition:transform .18s;justify-self:end}
+.rl-item.open .rl-car{transform:rotate(90deg)}
+.rl-item.open .rl-head{background:var(--surf)}
+.rl-body{padding:6px 48px 30px;background:var(--surf)}
+
+@media(max-width:900px){
+  .rl-head{grid-template-columns:3px 1fr 22px;padding:12px 16px}
+  .rl-head .rl-tier,.rl-head .rl-mech{display:none}
+  .rl-body{padding:6px 16px 24px}
+  .rl-bar{padding:0 16px 14px}
+}

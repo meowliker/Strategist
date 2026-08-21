@@ -1,83 +1,8 @@
 import { readProduct } from '../../lib/data/select'
-import { loadResearch, loadSynthesis, type ResearchCard } from '../../lib/data/research'
+import { loadResearch, loadSynthesis } from '../../lib/data/research'
+import ResearchList from '../../components/ResearchList'
 
 export const dynamic = 'force-dynamic'
-
-function Card({ r }: { r: ResearchCard }) {
-  return (
-    <div className="rs">
-      <div className="rs-hd">
-        <span className="rs-name">{r.filename}</span>
-        <span className={`rs-tier ${r.tier}`}>{r.tierLabel}</span>
-        <a className="rs-task" href={r.taskUrl} target="_blank" rel="noopener">{r.taskName} ↗</a>
-        {r.sourceHandle && <span className="rs-task">source {r.sourceHandle}</span>}
-      </div>
-
-      <p className="rs-format">{r.formatDescription}</p>
-
-      {r.hookText && <div className="rs-hook">&ldquo;{r.hookText}&rdquo;</div>}
-
-      <div className="rs-grid">
-        <div>
-          <div className="rs-blk-l">Hook mechanism</div>
-          <div className="rs-blk-v">{r.hookMechanism}</div>
-        </div>
-        <div>
-          <div className="rs-blk-l">Core concept</div>
-          <div className="rs-blk-v">{r.coreConcept}</div>
-        </div>
-        <div>
-          <div className="rs-blk-l">The bet it makes</div>
-          <div className="rs-blk-v">{r.creativeHypothesis}</div>
-        </div>
-      </div>
-
-      {r.scriptArc.length > 0 && (
-        <div style={{ marginBottom: 20 }}>
-          <div className="rs-blk-l">Script arc</div>
-          <ol className="rs-arc">
-            {r.scriptArc.map((b, i) => (
-              <li key={i}>
-                <span className="rs-beat">{b.beat}</span>
-                {b.detail && <> — <span className="rs-detail">{b.detail}</span></>}
-              </li>
-            ))}
-          </ol>
-        </div>
-      )}
-
-      {r.scenes.length > 0 && (
-        <div style={{ marginBottom: 20 }}>
-          <div className="rs-blk-l">Scene breakdown</div>
-          <ol className="rs-arc">
-            {r.scenes.map((s) => (
-              <li key={s.n}>
-                <span className="rs-detail">{s.visual}</span>
-                {s.onScreenText && <> — <span className="rs-beat">&ldquo;{s.onScreenText}&rdquo;</span></>}
-              </li>
-            ))}
-          </ol>
-        </div>
-      )}
-
-      {r.tactileElements.length > 0 && (
-        <div style={{ marginBottom: 16 }}>
-          <div className="rs-blk-l">On screen</div>
-          <div className="rs-chips">
-            {r.tactileElements.map((t, i) => <span className="rs-chip" key={i}>{t}</span>)}
-          </div>
-        </div>
-      )}
-
-      {r.repurposedSignals && (
-        <div>
-          <div className="rs-blk-l">Repurposed or produced?</div>
-          <div className="rs-blk-v" style={{ color: 'var(--ink2)' }}>{r.repurposedSignals}</div>
-        </div>
-      )}
-    </div>
-  )
-}
 
 export default async function Research({
   searchParams,
@@ -192,14 +117,15 @@ export default async function Research({
 
       <div className="sec-hdr">
         <h2 className="sec-ttl" style={{ fontSize: 26 }}>Winning creatives, taken apart</h2>
-        <span className="sec-sub">{winners.length} analysed</span>
+        <span className="sec-sub">{winners.length} analysed · click any row to expand</span>
       </div>
-      {winners.length === 0 && (
+      {winners.length === 0 ? (
         <div className="empty">
           Nothing analysed yet in this view. Run <code>npm run enrich</code>.
         </div>
+      ) : (
+        <ResearchList cards={winners} label="winners" />
       )}
-      {winners.map((r) => <Card key={r.creativeId} r={r} />)}
 
       {losers.length > 0 && (
         <>
@@ -207,7 +133,7 @@ export default async function Research({
             <h2 className="sec-ttl" style={{ fontSize: 26 }}>What lost</h2>
             <span className="sec-sub">{losers.length} analysed — the contrast is the lesson</span>
           </div>
-          {losers.map((r) => <Card key={r.creativeId} r={r} />)}
+          <ResearchList cards={losers} label="losers" />
         </>
       )}
     </>
