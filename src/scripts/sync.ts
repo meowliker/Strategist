@@ -9,6 +9,7 @@ import path from 'node:path'
 import { ClickUpClient, type ClickUpTask } from '../lib/clickup/client'
 import { buildSnapshot } from '../lib/data/build'
 import { PRODUCTS } from '../lib/products'
+import { persistTasks } from '../db/persist'
 
 async function main() {
   const token = process.env.CLICKUP_TOKEN
@@ -26,6 +27,9 @@ async function main() {
     all.push(...tasks)
     console.log(`${String(tasks.length).padStart(4)} tasks`)
   }
+
+  const { upserted, duplicates } = await persistTasks(all, 'manual')
+  console.log(`\n  Postgres: ${upserted} rows upserted (${duplicates} flagged duplicate)`)
 
   const snapshot = buildSnapshot(all, { live: true })
   await mkdir(path.join(process.cwd(), 'data'), { recursive: true })
