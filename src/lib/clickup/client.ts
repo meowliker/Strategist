@@ -87,19 +87,22 @@ export class ClickUpClient {
    * get the complete set — a partial read would silently skew every win-rate
    * this system computes.
    */
-  async listTasks(listId: string): Promise<ClickUpTask[]> {
+  async listTasks(listId: string, statuses?: readonly string[]): Promise<ClickUpTask[]> {
     const all: ClickUpTask[] = []
     for (let page = 0; ; page++) {
+      const params: Record<string, string | string[]> = {
+        page: String(page),
+        subtasks: 'true',
+        include_closed: 'true',
+        include_markdown_description: 'true',
+      }
+      // Filtering server-side means an unfiltered list's hundreds of untested
+      // tasks are never transferred at all.
+      if (statuses?.length) params['statuses[]'] = [...statuses]
+
       const data = await this.request<{ tasks: ClickUpTask[]; last_page?: boolean }>(
         `/list/${listId}/task`,
-        {
-          page: String(page),
-          subtasks: 'true',
-          include_closed: 'true',
-          include_markdown_description: 'true',
-          // Statuses are deliberately unfiltered: losers are the denominator for
-          // win rate and the only signal Instagram Growth Bundle currently has.
-        },
+        params,
       )
       all.push(...data.tasks)
       if (data.last_page || data.tasks.length === 0) break

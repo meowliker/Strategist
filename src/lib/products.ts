@@ -3,7 +3,7 @@
  * adding a product means adding it here and nowhere else.
  */
 /** Short key used throughout the app and in the ?product= query string. */
-export type ProductKey = 'hh' | 'ad' | 'ca' | 'ig' | 'km' | 'ot'
+export type ProductKey = 'hh' | 'ad' | 'ca' | 'ig' | 'km' | 'kl' | 'ot'
 
 export interface ProductConfig {
   /** Short key used in URLs, CSS classes and the data layer */
@@ -28,6 +28,7 @@ export const PRODUCTS: ProductConfig[] = [
   { key: 'ca', listId: '901613035012', name: 'Canva Mastery', short: 'Canva', codes: ['CA'] },
   { key: 'ig', listId: '901615920553', name: 'Instagram Growth Bundle', short: 'Instagram', codes: ['IG', 'IGB'] },
   { key: 'km', listId: '901613118174', name: 'Kids Mental Health', short: 'Kids MH', codes: ['KM', 'KMH'] },
+  { key: 'kl', listId: '901613067126', name: 'Kids Life Skill', short: 'Kids LS', codes: ['KL', 'KLS'] },
 ]
 
 /** ClickUp list id → short product key. */
