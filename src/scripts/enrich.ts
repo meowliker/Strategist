@@ -79,6 +79,8 @@ async function main() {
         hookMechanism: r.hook_mechanism,
         coreConcept: r.core_concept,
         creativeHypothesis: r.creative_hypothesis,
+        offer: r.offer || null,
+        offerMechanism: r.offer_mechanism || null,
         scriptArc: r.script_arc.map((b) => ({ beat: b.beat, detail: b.detail })),
         scenes: r.scenes.map((s) => ({ n: s.n, visual: s.visual, onScreenText: s.on_screen_text })),
         tactileElements: r.tactile_elements,

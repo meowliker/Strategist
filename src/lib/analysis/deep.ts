@@ -19,6 +19,10 @@ export const ResearchSchema = z.object({
   core_concept: z.string(),
   /** The bet the creative makes about why the viewer will act. */
   creative_hypothesis: z.string(),
+  /** What the viewer is asked to take, and on what terms. Verbatim where shown. */
+  offer: z.string(),
+  /** How the offer is justified — free, discounted, limited, bonus-stacked. */
+  offer_mechanism: z.string(),
 
   /** The ordered beats the argument moves through, 2–6 of them. */
   script_arc: z.array(z.object({
@@ -60,6 +64,13 @@ What to produce:
   is useful. "Video ad" is not.
 - hook_mechanism: the lever the opening pulls. Name the mechanism, not the
   topic — "timely news urgency", "POV discovery", "regret implying demand".
+- offer: what the viewer is actually asked to take and on what terms, quoting
+  the on-screen or spoken wording where there is any. "FREE Herbal Healing
+  Guide, tap below, no price mentioned" is useful. "A guide" is not. If the
+  creative never makes an offer, say so plainly.
+- offer_mechanism: how the offer is justified — free, discounted, limited-time,
+  bonus-stacked, anniversary, first-N-people. Say "none stated" when there is no
+  justification rather than inventing one.
 - core_concept: one sentence capturing what the creative IS. Someone who reads
   only this line should be able to picture the ad.
 - creative_hypothesis: the bet it makes about why the viewer will act.
@@ -78,7 +89,7 @@ Quote on-screen and spoken text exactly. Never invent a line you cannot see or
 hear. If the frames are too sparse to support a claim, say what is actually
 visible instead of filling the gap.`
 
-export const DEEP_PROMPT_VERSION = 1
+export const DEEP_PROMPT_VERSION = 2
 export const DEEP_MODEL = 'claude-opus-5'
 
 function selectFrames(frames: Frame[], max = 12): Frame[] {

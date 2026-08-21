@@ -233,6 +233,10 @@ export const research = pgTable('research', {
   coreConcept: text('core_concept').notNull(),
   /** Why it was built this way — the bet the creative is making. */
   creativeHypothesis: text('creative_hypothesis').notNull(),
+  /** What the viewer is asked to take, and on what terms. */
+  offer: text('offer'),
+  /** How the offer is justified: free, limited-time, bonus-stacked, none. */
+  offerMechanism: text('offer_mechanism'),
 
   /** Ordered beats of the script, the shape the argument moves through. */
   scriptArc: jsonb('script_arc').$type<{ beat: string; detail: string }[]>().notNull().default([]),
