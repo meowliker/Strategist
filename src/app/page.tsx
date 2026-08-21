@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic'
 
 const CARDS = [
   { href: '/formats', n: '02', t: 'Formats', d: 'Win rate by creative structure, counted only on creatives with a decided outcome.' },
-  { href: '/creatives', n: '03', t: 'Creatives', d: 'Every task and every analysed hook variant, with ClickUp and the creative side by side.' },
+  { href: '/creatives', n: '03', t: 'Creatives', d: 'Every task, and every hook variant we have watched, with ClickUp and the creative side by side.' },
   { href: '/keywords', n: '04', t: 'Keywords', d: 'Phrases mined from what winning creatives actually say, linked to Instagram, Ad Library and TikTok.' },
   { href: '/verification', n: '05', t: 'Verification', d: 'Which ClickUp fields hold up against the footage, and which do not.' },
 ]
@@ -37,7 +37,7 @@ export default async function Overview({
         <div className="band-c"><div className="band-n">{t.tasks}</div><div className="band-l">Tasks synced</div></div>
         <div className="band-c"><div className="band-n win">{t.winners}</div><div className="band-l">Winners</div></div>
         <div className="band-c"><div className="band-n loss">{t.losers}</div><div className="band-l">Losers</div></div>
-        <div className="band-c"><div className="band-n">{t.analysed}</div><div className="band-l">Verified against file</div></div>
+        <div className="band-c"><div className="band-n">{t.analysed}</div><div className="band-l">Videos watched</div></div>
         <div className="band-c"><div className="band-n flag">{t.mismatches}</div><div className="band-l">Field mismatches</div></div>
       </div>
 
@@ -54,7 +54,7 @@ export default async function Overview({
 
       {t.analysed < t.winners && (
         <div className="empty">
-          {t.analysed} of {t.winners} winners verified so far. The rest are still processing —
+          {t.analysed} of {t.winners} winning tasks watched so far. The rest are still processing —
           run <code>npm run snapshot</code> to pull in new results.
         </div>
       )}

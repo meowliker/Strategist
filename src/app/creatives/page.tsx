@@ -16,9 +16,9 @@ export default async function Creatives({
         <p className="phead-ey">03 · Creatives</p>
         <h1 className="phead-ttl">Winning creatives</h1>
         <p className="phead-sub">
-          {snap.totals.analysed} of {snap.totals.winners} winners have been read from their files.
-          A verified task appears once per hook variant, because one label cannot describe three
-          different hooks.
+          {snap.totals.analysed} of {snap.totals.winners} winning tasks have had their video files
+          watched. A watched task appears once per hook variant, because one ClickUp label cannot
+          describe three different hooks.
         </p>
       </div>
       <CreativesTable snapshot={snap} />

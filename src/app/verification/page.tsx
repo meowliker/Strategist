@@ -42,7 +42,7 @@ export default async function Verification({
         <div className="dlv-hdr">
           <span className="dlv-pct">{pct}%</span>
           <span className="dlv-pct-lbl">
-            of winners read from their files ({snap.totals.analysed} of {snap.totals.winners})
+            of winning tasks watched ({snap.totals.analysed} of {snap.totals.winners})
           </span>
         </div>
         <div className="dlv-bar"><div className="dlv-fill" style={{ width: `${pct}%` }} /></div>
@@ -53,7 +53,7 @@ export default async function Verification({
         <span className="sec-sub">how often ClickUp matches the footage</span>
       </div>
       <div className="d-list">
-        {snap.trust.length === 0 && <div className="empty">No creatives verified yet.</div>}
+        {snap.trust.length === 0 && <div className="empty">No videos watched yet.</div>}
         {snap.trust.map((t, i) => {
           const acc = t.total ? Math.round((t.agree / t.total) * 100) : 0
           return (

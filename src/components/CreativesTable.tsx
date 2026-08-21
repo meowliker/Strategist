@@ -8,7 +8,7 @@ const VERDICT_LABEL: Record<string, string> = {
   differs: 'two views', unverifiable: 'not verifiable',
 }
 
-type View = 'verified' | 'winners' | 'all'
+type View = 'watched' | 'winners' | 'all'
 
 /**
  * Both readings of one field. For Angle and Persona neither side is
@@ -50,11 +50,11 @@ const initials = (n: string | null) =>
   !n ? '?' : (n.trim().split(/\s+/).map((p) => p[0]).slice(0, 2).join('') || '?').toUpperCase()
 
 export default function CreativesTable({ snapshot }: { snapshot: Snapshot }) {
-  const [view, setView] = useState<View>('verified')
+  const [view, setView] = useState<View>('watched')
   const [panel, setPanel] = useState<CreativeRow | null>(null)
 
   const rows = useMemo(() => {
-    if (view === 'verified') return snapshot.creatives.filter((c) => c.analysed)
+    if (view === 'watched') return snapshot.creatives.filter((c) => c.analysed)
     if (view === 'winners') {
       return snapshot.creatives.filter(
         (c) => c.status === 'win' || c.status === 'mild' || c.status === 'scale',
@@ -64,7 +64,7 @@ export default function CreativesTable({ snapshot }: { snapshot: Snapshot }) {
   }, [view, snapshot.creatives])
 
   const VIEWS: { key: View; label: string; count: number }[] = [
-    { key: 'verified', label: 'Verified', count: snapshot.creatives.filter((c) => c.analysed).length },
+    { key: 'watched', label: 'Watched', count: snapshot.creatives.filter((c) => c.analysed).length },
     { key: 'winners', label: 'Winners', count: new Set(snapshot.creatives.filter((c) => c.status === 'win' || c.status === 'mild' || c.status === 'scale').map((c) => c.taskId)).size },
     { key: 'all', label: 'All tasks', count: snapshot.creatives.length },
   ]
@@ -91,7 +91,7 @@ export default function CreativesTable({ snapshot }: { snapshot: Snapshot }) {
       <div>
         {rows.length === 0 && (
           <div className="empty">
-            Nothing here yet. Verified creatives appear once the backfill has read their files.
+            Nothing here yet. Creatives appear here once their video file has been watched.
           </div>
         )}
         {rows.map((c) => (

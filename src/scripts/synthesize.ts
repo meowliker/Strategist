@@ -55,8 +55,12 @@ Rules that matter:
 - hunt_for tells the team what competitor content to go find. Each entry cites
   which winners justify it, and gives concrete visual signals someone can
   actually check while scrolling.
-- avoid must be grounded in creatives that lost or underperformed here. Do not
-  import generic advertising advice.
+- avoid must be grounded in what actually underperformed here. Note carefully:
+  the losing creatives were NOT watched — only their brief fields are available,
+  so you know their claimed angle, persona and format but not what was on
+  screen. Reason only from those fields when citing a loser, and say when a
+  conclusion is limited by that. Do not import generic advertising advice, and
+  do not describe a losing creative's footage as if you had seen it.
 - If the sample is too small to support a conclusion, say that plainly in the
   relevant field instead of asserting a pattern. A thin sample honestly labelled
   is far more useful than a confident pattern that is really noise.`
@@ -76,6 +80,18 @@ const LIST_TO_KEY: Record<string, string> = {
 
 async function main() {
   const anthropic = new Anthropic()
+
+  // Losing creatives are never downloaded — only winners have their files read.
+  // Their brief fields still provide contrast, so they are passed in clearly
+  // marked as claimed-only.
+  const loserRows = (await db.execute(sql`
+    select t.list_id, t.product_name, t.name as task_name,
+           t.claimed_angle, t.claimed_persona, t.claimed_creative_structure,
+           t.claimed_production_style, t.claimed_hook_type, t.notes
+    from tasks t
+    where t.category = 'loser' and t.duplicate_of_task_id is null
+    order by t.product_name, t.name
+  `)) as unknown as Record<string, string | null>[]
 
   const rows = (await db.execute(sql`
     select t.list_id, t.product_name, t.name as task_name, t.category::text as category,
@@ -101,10 +117,10 @@ async function main() {
   for (const [key, items] of byProduct) {
     const winners = items.filter((i) => i.category === 'winner' || i.category === 'scale')
     const mild = items.filter((i) => i.category === 'mild_winner')
-    const losers = items.filter((i) => i.category === 'loser')
     const name = items[0].product_name
+    const losers = loserRows.filter((l) => l.list_id === items[0].list_id)
 
-    console.log(`\n${name}: ${winners.length} winner · ${mild.length} mild · ${losers.length} loser creatives`)
+    console.log(`\n${name}: ${winners.length} winner · ${mild.length} mild creatives watched · ${losers.length} losers from brief only`)
     if (winners.length + mild.length === 0) {
       console.log('  skipped — nothing has won yet')
       continue
@@ -128,7 +144,18 @@ async function main() {
       `Product: ${name}`,
       describe('WINNERS', winners),
       describe('MILD WINNERS', mild),
-      describe('LOSERS', losers),
+      losers.length
+        ? `\n## LOSERS (${losers.length}) — brief fields only, these videos were NOT watched\n` +
+          losers.map((l) => [
+            `### ${l.task_name}`,
+            l.claimed_angle ? `Claimed angle: ${l.claimed_angle}` : '',
+            l.claimed_persona ? `Claimed persona: ${l.claimed_persona}` : '',
+            l.claimed_creative_structure ? `Claimed structure: ${l.claimed_creative_structure}` : '',
+            l.claimed_production_style ? `Claimed production style: ${l.claimed_production_style}` : '',
+            l.claimed_hook_type ? `Claimed hook type: ${l.claimed_hook_type}` : '',
+            l.notes ? `Note: ${l.notes}` : '',
+          ].filter(Boolean).join('\n')).join('\n\n')
+        : '\n## LOSERS\n(none recorded for this product)\n',
     ].join('\n')
 
     const res = await anthropic.messages.parse({
