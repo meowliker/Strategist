@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import Cursor from './Cursor'
+import JobControls from './JobControls'
 import type { ProductKey } from '../lib/data/types'
 import { PRODUCTS as CONFIGURED } from '../lib/products'
 
@@ -99,6 +100,7 @@ export default function Chrome({ syncedAt, live }: { syncedAt: string; live: boo
         </div>
 
         <div className="hdr-sp" />
+        <JobControls product={current.key === 'all' ? null : current.label} />
         <div id="sync-wrap">
           <div className={`s-dot${live ? ' live' : ''}`} />
           <span>{syncedAt}</span>

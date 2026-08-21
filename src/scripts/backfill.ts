@@ -78,6 +78,13 @@ async function main() {
     vocabulary.set(row.product, v)
   }
 
+  // Creatives already watched, looked up once. Without this the loop below
+  // downloads, transcribes and analyses a file before the insert's conflict
+  // clause silently discards it — paying the full cost to learn it was done.
+  const already = new Set(
+    (await db.select({ id: creatives.id }).from(creatives)).map((c) => c.id),
+  )
+
   console.log(`Backfilling ${winners.length} winners`)
   for (const [product, v] of vocabulary) {
     if (winners.some((w) => w.product === product)) {
@@ -86,7 +93,7 @@ async function main() {
   }
   console.log()
 
-  let done = 0, failed = 0, skipped = 0, totalIn = 0, totalOut = 0, totalMismatch = 0
+  let done = 0, failed = 0, skipped = 0, alreadyDone = 0, totalIn = 0, totalOut = 0, totalMismatch = 0
 
   for (const w of winners) {
     const folderId = folderIdFromUrl(w.link)
@@ -116,9 +123,18 @@ async function main() {
       }
     }
 
-    console.log(`  ${w.name}  (${media.length} files)${scopeNote}`)
+    const fresh = media.filter((f) => !already.has(`${w.id}_${f.id}`))
+    if (fresh.length === 0) {
+      alreadyDone += media.length
+      continue
+    }
+    if (fresh.length < media.length) {
+      alreadyDone += media.length - fresh.length
+    }
 
-    for (const file of media) {
+    console.log(`  ${w.name}  (${fresh.length} to watch of ${media.length})${scopeNote}`)
+
+    for (const file of fresh) {
       const creativeId = `${w.id}_${file.id}`
       const work = await mkdtemp(path.join(tmpdir(), 'strategist-'))
       try {
@@ -256,7 +272,7 @@ async function main() {
   }
 
   const cost = totalIn * COST_IN + totalOut * COST_OUT
-  console.log(`\n  ${done} creatives analysed, ${failed} failed, ${skipped} skipped by winner note`)
+  console.log(`\n  ${done} newly watched, ${alreadyDone} already done, ${failed} failed, ${skipped} skipped by winner note`)
   console.log(`  ${totalMismatch} field mismatches against ClickUp`)
   console.log(`  tokens: ${totalIn.toLocaleString()} in / ${totalOut.toLocaleString()} out — $${cost.toFixed(2)}`)
   if (done) console.log(`  ≈ $${(cost / done).toFixed(3)} per creative`)

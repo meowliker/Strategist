@@ -3,7 +3,7 @@ import { useEffect, useRef } from 'react'
 
 /** Blueprint cursor: a lerped ring in difference blend mode that expands and
  *  labels itself over interactive rows. */
-const INTERACTIVE = '.t-row,.d-it,.tp-btn,.tp-close,.hb,.fb,.snav-btn,.card,.psw-btn,.psw-item,.d-lnk'
+const INTERACTIVE = '.t-row,.d-it,.tp-btn,.tp-close,.hb,.fb,.snav-btn,.card,.psw-btn,.psw-item,.d-lnk,.jb,.rl-head,.rl-btn,.mdl-copy,.mdl-tab'
 
 export default function Cursor() {
   const ring = useRef<HTMLDivElement>(null)

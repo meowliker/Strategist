@@ -646,3 +646,31 @@ button{font-family:inherit}
   .rl-body{padding:6px 16px 24px}
   .rl-bar{padding:0 16px 14px}
 }
+
+/* ── JOB CONTROLS ── */
+.jobs{display:flex;align-items:center;gap:6px}
+.jb{appearance:none;cursor:none;font-size:11px;font-weight:600;letter-spacing:.03em;
+  color:var(--ink2);background:transparent;border:1px solid var(--brd);
+  padding:5px 11px;border-radius:3px;transition:all .12s;display:inline-flex;
+  align-items:center;gap:6px;white-space:nowrap}
+.jb:hover:not(:disabled){color:var(--ink);border-color:var(--ink2);background:var(--surf2)}
+.jb:disabled{opacity:.5}
+.jb.busy{color:var(--ink);border-color:var(--g)}
+.jb-n{font-size:9px;font-weight:800;background:var(--ink);color:var(--bg);
+  border-radius:8px;padding:1px 5px;font-variant-numeric:tabular-nums}
+.jb.busy .jb-n{background:var(--g);color:var(--gd)}
+.jb-spin{width:7px;height:7px;border-radius:50%;background:var(--g);
+  animation:jbp 1s ease-in-out infinite;flex-shrink:0}
+@keyframes jbp{50%{opacity:.25}}
+
+#joblog{position:fixed;bottom:0;left:0;right:0;z-index:540;
+  background:var(--ink);color:rgba(255,255,255,.82);
+  font-family:'SF Mono',Consolas,monospace;font-size:11px;line-height:1.6;
+  padding:9px 20px;display:flex;align-items:center;gap:14px;
+  border-top:1px solid rgba(255,255,255,.1)}
+.jl-tag{font-weight:800;letter-spacing:.08em;text-transform:uppercase;font-size:9px;
+  color:var(--g);flex-shrink:0}
+.jl-line{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.jl-x{appearance:none;border:none;background:transparent;cursor:none;
+  color:rgba(255,255,255,.4);font-size:12px;flex-shrink:0}
+.jl-x:hover{color:#fff}
