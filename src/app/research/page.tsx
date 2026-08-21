@@ -25,6 +25,13 @@ export default async function Research({
         </p>
       </div>
 
+      {syntheses.length === 0 && cards.length > 0 && (
+        <div className="empty">
+          The cross-creative synthesis — hook formulas ranked, winners vs mild winners, what to
+          hunt for — has not been generated for this view yet. Run <code>npm run synthesize</code>.
+        </div>
+      )}
+
       {syntheses.map((s) => (
         <section key={s.productKey}>
           {s.topPattern && (
