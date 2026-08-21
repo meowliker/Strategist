@@ -11,6 +11,7 @@ export const PAGES = [
   { href: '/creatives', n: '03', label: 'Creatives' },
   { href: '/keywords', n: '04', label: 'Keywords' },
   { href: '/verification', n: '05', label: 'Verification' },
+  { href: '/research', n: '06', label: 'Research' },
 ]
 
 export const PRODUCTS: { key: ProductKey | 'all'; label: string; short: string }[] = [
