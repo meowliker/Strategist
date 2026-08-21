@@ -7,25 +7,56 @@ export const dynamic = 'force-dynamic'
 
 const VALID: JobKind[] = ['watch', 'enrich', 'sync', 'snapshot', 'synthesize']
 
-/** Job status plus how much work is outstanding, so buttons can show counts. */
-export async function GET() {
+/**
+ * Job status, plus outstanding work broken down by product.
+ *
+ * The buttons show the count for whichever product is selected, so switching
+ * products tells you where the gap actually is rather than repeating one
+ * workspace-wide number on every page.
+ */
+export async function GET(req: Request) {
+  const product = new URL(req.url).searchParams.get('product')
+
+  let byProduct: Record<string, { toWatch: number; toEnrich: number }> = {}
   let pending = { toWatch: 0, toEnrich: 0 }
+
   try {
     const rows = (await db.execute(sql`
       select
-        (select count(*)::int from tasks t
-          where t.category in ('winner','mild_winner','scale')
-            and t.duplicate_of_task_id is null
-            and t.drive_link is not null
-            and not exists (select 1 from creatives c where c.task_id = t.id)) as to_watch,
-        (select count(*)::int from creatives c
-          where not exists (select 1 from research r where r.creative_id = c.id)) as to_enrich
-    `)) as unknown as { to_watch: number; to_enrich: number }[]
-    pending = { toWatch: Number(rows[0]?.to_watch ?? 0), toEnrich: Number(rows[0]?.to_enrich ?? 0) }
+        t.product_name,
+        count(distinct t.id) filter (
+          where t.drive_link is not null
+            and not exists (select 1 from creatives c where c.task_id = t.id)
+        )::int as to_watch,
+        count(distinct c.id) filter (
+          where c.id is not null
+            and not exists (select 1 from research r where r.creative_id = c.id)
+        )::int as to_enrich
+      from tasks t
+      left join creatives c on c.task_id = t.id
+      where t.category in ('winner','mild_winner','scale')
+        and t.duplicate_of_task_id is null
+      group by t.product_name
+    `)) as unknown as { product_name: string; to_watch: number; to_enrich: number }[]
+
+    for (const r of rows) {
+      byProduct[r.product_name] = {
+        toWatch: Number(r.to_watch ?? 0),
+        toEnrich: Number(r.to_enrich ?? 0),
+      }
+    }
+
+    pending = product && byProduct[product]
+      ? byProduct[product]
+      : Object.values(byProduct).reduce(
+          (acc, v) => ({ toWatch: acc.toWatch + v.toWatch, toEnrich: acc.toEnrich + v.toEnrich }),
+          { toWatch: 0, toEnrich: 0 },
+        )
   } catch {
-    // Counts are advisory; a blip should not break the controls.
+    // Counts are advisory; a blip should not disable the controls.
   }
-  return NextResponse.json({ jobs: getJobs(), pending })
+
+  return NextResponse.json({ jobs: getJobs(), pending, byProduct })
 }
 
 export async function POST(req: Request) {

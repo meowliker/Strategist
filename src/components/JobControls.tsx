@@ -8,7 +8,9 @@ interface JobState {
 }
 interface Status {
   jobs: Record<string, JobState | null>
+  /** Scoped to the selected product when one is chosen. */
   pending: { toWatch: number; toEnrich: number }
+  byProduct: Record<string, { toWatch: number; toEnrich: number }>
 }
 
 /**
@@ -27,10 +29,11 @@ export default function JobControls({ product }: { product: string | null }) {
 
   const load = useCallback(async () => {
     try {
-      const r = await fetch('/api/jobs', { cache: 'no-store' })
+      const qs = product ? `?product=${encodeURIComponent(product)}` : ''
+      const r = await fetch(`/api/jobs${qs}`, { cache: 'no-store' })
       if (r.ok) setStatus(await r.json())
     } catch { /* transient; the next poll retries */ }
-  }, [])
+  }, [product])
 
   useEffect(() => { load() }, [load])
 
@@ -90,7 +93,9 @@ export default function JobControls({ product }: { product: string | null }) {
         <button className={`jb${jobBusy('watch') ? ' busy' : ''}`}
           disabled={busy !== null || running}
           onClick={() => start('watch')}
-          title={product ? `Watch new winners in ${product}` : 'Watch new winners across all products'}>
+          title={product
+            ? `${toWatch} winning task(s) in ${product} have no creatives yet`
+            : `${toWatch} winning task(s) across all products have no creatives yet`}>
           {jobBusy('watch') && <span className="jb-spin" />}
           Watch
           {toWatch > 0 && !running && <span className="jb-n">{toWatch}</span>}
@@ -99,7 +104,9 @@ export default function JobControls({ product }: { product: string | null }) {
         <button className={`jb${jobBusy('enrich') ? ' busy' : ''}`}
           disabled={busy !== null || running}
           onClick={() => start('enrich')}
-          title={product ? `Enrich ${product}` : 'Enrich every watched creative'}>
+          title={product
+            ? `${toEnrich} watched creative(s) in ${product} have no deep read yet`
+            : `${toEnrich} watched creative(s) across all products have no deep read yet`}>
           {jobBusy('enrich') && <span className="jb-spin" />}
           Enrich
           {toEnrich > 0 && !running && <span className="jb-n">{toEnrich}</span>}

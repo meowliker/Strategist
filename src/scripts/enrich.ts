@@ -18,6 +18,19 @@ import { analyseDeep, DEEP_MODEL, DEEP_PROMPT_VERSION } from '../lib/analysis/de
 
 const limit = Number(process.argv.find((a) => a.startsWith('--limit='))?.split('=')[1] ?? '0')
 const productArg = process.argv.find((a) => a.startsWith('--product='))?.split('=')[1]
+
+/**
+ * How many creatives to process at once.
+ *
+ * Each slot runs a Drive download, an ffmpeg frame pass and one model call.
+ * Four keeps the CPU busy without starving the machine, and stays well inside
+ * Supabase's 15-connection ceiling — one process with a small pool, rather than
+ * one process per product each holding its own.
+ */
+const CONCURRENCY = Math.max(
+  1,
+  Number(process.argv.find((a) => a.startsWith('--concurrency='))?.split('=')[1] ?? '4'),
+)
 const COST_IN = 5 / 1_000_000
 const COST_OUT = 25 / 1_000_000
 
@@ -47,12 +60,31 @@ async function main() {
     pending = pending.filter((p) => p.product.toLowerCase().includes(productArg.toLowerCase()))
     console.log(`Scoped to ${productArg}`)
   }
+  // Round-robin across products so every product makes visible progress from
+  // the start, rather than the alphabetically-first one finishing alone.
+  const groups = new Map<string, Pending[]>()
+  for (const p of pending) groups.set(p.product, [...(groups.get(p.product) ?? []), p])
+  const interleaved: Pending[] = []
+  for (let i = 0; interleaved.length < pending.length; i++) {
+    for (const list of groups.values()) if (list[i]) interleaved.push(list[i])
+  }
+  pending = interleaved
+
   if (limit) pending = pending.slice(0, limit)
-  console.log(`Enriching ${pending.length} creatives\n`)
+  const byProduct = pending.reduce<Record<string, number>>((acc, p) => {
+    acc[p.product] = (acc[p.product] ?? 0) + 1
+    return acc
+  }, {})
+  console.log(`Enriching ${pending.length} creatives, ${CONCURRENCY} at a time`)
+  for (const [name, n] of Object.entries(byProduct)) {
+    console.log(`  ${name.padEnd(26)} ${n}`)
+  }
+  console.log()
 
   let done = 0, failed = 0, totalIn = 0, totalOut = 0
 
-  for (const p of pending) {
+  /** Processes one creative end to end. Safe to run alongside others. */
+  const processOne = async (p: Pending) => {
     const work = await mkdtemp(path.join(tmpdir(), 'enrich-'))
     try {
       const local = await downloadFile(drive, p.source_file_id, path.join(work, p.filename))
@@ -91,14 +123,31 @@ async function main() {
       }).onConflictDoNothing()
 
       done++
-      console.log(`  ✓ ${p.filename.padEnd(24).slice(0, 24)} ${r.hook_mechanism.padEnd(26).slice(0, 26)} ${r.format_description.slice(0, 42)}`)
+      console.log(`  ✓ [${done + failed}/${pending.length}] ${p.product.slice(0, 14).padEnd(14)} ${p.filename.padEnd(24).slice(0, 24)} ${r.hook_mechanism.slice(0, 38)}`)
     } catch (e) {
       failed++
-      console.log(`  ✗ ${p.filename} — ${(e as Error).message.slice(0, 90)}`)
+      console.log(`  ✗ [${done + failed}/${pending.length}] ${p.filename} — ${(e as Error).message.slice(0, 160)}`)
     } finally {
       await rm(work, { recursive: true, force: true })
     }
   }
+
+  // Bounded worker pool: each worker takes the next item off a shared cursor,
+  // so a slow creative never blocks the rest and every product advances
+  // together rather than one finishing before the next begins.
+  const startedAt = Date.now()
+  let cursor = 0
+  const worker = async () => {
+    for (;;) {
+      const i = cursor++
+      if (i >= pending.length) return
+      await processOne(pending[i])
+    }
+  }
+  await Promise.all(Array.from({ length: Math.min(CONCURRENCY, pending.length) }, worker))
+
+  const mins = (Date.now() - startedAt) / 60000
+  console.log(`\n  ${mins.toFixed(1)} min · ${(done / Math.max(mins, 0.01)).toFixed(1)} creatives/min`)
 
   const cost = totalIn * COST_IN + totalOut * COST_OUT
   console.log(`\n  ${done} enriched, ${failed} failed — $${cost.toFixed(2)}`)
