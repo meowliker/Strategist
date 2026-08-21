@@ -18,6 +18,7 @@ import { extractAudio, transcribe } from '../lib/media/transcribe'
 import { analyseBlind, MODEL, PROMPT_VERSION } from '../lib/analysis/blind'
 import { compareAll, countMismatches, FIELD_SPECS } from '../lib/analysis/verdict'
 import { PRODUCTS } from '../lib/products'
+import { winningVariant } from '../lib/parse/winningVariant'
 
 const limit = Number(process.argv.find((a) => a.startsWith('--limit='))?.split('=')[1] ?? '0')
 const only = process.argv.find((a) => a.startsWith('--task='))?.split('=')[1]
@@ -38,6 +39,7 @@ async function main() {
       cAngle: tasks.claimedAngle, cPersona: tasks.claimedPersona, cFunnel: tasks.claimedFunnel,
       cAdType: tasks.claimedAdType, cHook: tasks.claimedHookType,
       cStructure: tasks.claimedCreativeStructure, cStyle: tasks.claimedProductionStyle,
+      description: tasks.rawDescription,
     })
     .from(tasks)
     .where(and(
@@ -84,7 +86,7 @@ async function main() {
   }
   console.log()
 
-  let done = 0, failed = 0, totalIn = 0, totalOut = 0, totalMismatch = 0
+  let done = 0, failed = 0, skipped = 0, totalIn = 0, totalOut = 0, totalMismatch = 0
 
   for (const w of winners) {
     const folderId = folderIdFromUrl(w.link)
@@ -94,10 +96,27 @@ async function main() {
     try { files = await listMedia(drive, folderId) }
     catch (e) { console.log(`  ✗ ${w.name} — ${(e as Error).message.slice(0, 50)}`); failed++; continue }
 
-    const media = files.filter((f) => f.mimeType.startsWith('video/') || f.mimeType.startsWith('image/'))
+    let media = files.filter((f) => f.mimeType.startsWith('video/') || f.mimeType.startsWith('image/'))
     if (!media.length) { console.log(`  · ${w.name} — no media in folder`); continue }
 
-    console.log(`  ${w.name}  (${media.length} files)`)
+    // When the team has noted which single variation won, read only that file.
+    // Analysing all three would attribute the losing hooks to a winning task.
+    const onlyVariant = winningVariant(w.description)
+    let scopeNote = ''
+    if (onlyVariant !== null) {
+      const picked = media.filter((f) => variantIndex(f.name) === onlyVariant)
+      if (picked.length) {
+        skipped += media.length - picked.length
+        scopeNote = `  → V${onlyVariant} only (${media.length - picked.length} skipped)`
+        media = picked
+      } else {
+        // The note names a variant with no matching file; read everything
+        // rather than silently analyse nothing.
+        scopeNote = `  → V${onlyVariant} noted but no matching file, reading all`
+      }
+    }
+
+    console.log(`  ${w.name}  (${media.length} files)${scopeNote}`)
 
     for (const file of media) {
       const creativeId = `${w.id}_${file.id}`
@@ -237,7 +256,7 @@ async function main() {
   }
 
   const cost = totalIn * COST_IN + totalOut * COST_OUT
-  console.log(`\n  ${done} creatives analysed, ${failed} failed`)
+  console.log(`\n  ${done} creatives analysed, ${failed} failed, ${skipped} skipped by winner note`)
   console.log(`  ${totalMismatch} field mismatches against ClickUp`)
   console.log(`  tokens: ${totalIn.toLocaleString()} in / ${totalOut.toLocaleString()} out — $${cost.toFixed(2)}`)
   if (done) console.log(`  ≈ $${(cost / done).toFixed(3)} per creative`)
