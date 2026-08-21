@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import type { Snapshot, CreativeRow, ProductKey } from '../lib/data/types'
+import type { Snapshot, CreativeRow, ProductKey, DualValue } from '../lib/data/types'
 import { PRODUCT_LABEL, searchLinks } from '../lib/data/types'
 import Cursor from './Cursor'
 import HeroCanvas from './HeroCanvas'
@@ -33,6 +33,40 @@ function initials(name: string | null) {
   if (!name) return '?'
   const parts = name.trim().split(/\s+/)
   return ((parts[0]?.[0] ?? '') + (parts[1]?.[0] ?? '')).toUpperCase() || '?'
+}
+
+const VERDICT_LABEL: Record<string, string> = {
+  match: 'agree', mismatch: 'ClickUp wrong', missing: 'ClickUp blank',
+  differs: 'two views', unverifiable: 'not verifiable',
+}
+
+/**
+ * Shows both readings of a field. For Angle and Persona neither side is
+ * authoritative — the creative signals intent but cannot prove it — so they are
+ * presented as two views rather than a correction.
+ */
+function Dual({ field, v }: { field: string; v?: DualValue }) {
+  if (!v || (!v.claimed && !v.observed)) return null
+  return (
+    <div className="dv">
+      <div className="dv-hd">
+        <span className="dv-fld">{field}</span>
+        <span className={`vb ${v.verdict}`}>{VERDICT_LABEL[v.verdict] ?? v.verdict}</span>
+      </div>
+      <div className="dv-side">
+        <span className="dv-src">ClickUp</span>
+        <span className={`dv-val${v.claimed ? '' : ' none'}`}>{v.claimed ?? 'not set'}</span>
+      </div>
+      <div className="dv-side">
+        <span className="dv-src">Creative</span>
+        <span className={`dv-val${v.observed ? '' : ' none'}`}>{v.observed ?? 'not analysed'}</span>
+        {v.confidence !== null && v.observed && (
+          <span className="dv-conf">{Math.round(v.confidence * 100)}%</span>
+        )}
+      </div>
+      {v.rationale && <div className="dv-why">{v.rationale}</div>}
+    </div>
+  )
 }
 
 function goSec(id: string) {
@@ -234,7 +268,7 @@ export default function Dashboard({ snapshot }: { snapshot: Snapshot }) {
           <div className="t-hd">
             <div className="t-hd-c" />
             <div className="t-hd-c">Task</div>
-            <div className="t-hd-c hs">Lever / Note</div>
+            <div className="t-hd-c hs">Angle — ClickUp / Creative</div>
             <div className="t-hd-c">Product</div>
             <div className="t-hd-c">Status</div>
             <div className="t-hd-c hs">Assignee</div>
@@ -248,7 +282,14 @@ export default function Dashboard({ snapshot }: { snapshot: Snapshot }) {
                 onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setPanel(c) } }}>
                 <div className={`t-stripe ${c.product}`} />
                 <div className="t-c"><span className="t-id">{c.name}</span></div>
-                <div className="t-c hs"><span className="t-hook">{c.changedLever ?? c.hook ?? '—'}</span></div>
+                <div className="t-c hs">
+                  <span className="t-hook">
+                    {c.angle?.claimed ?? '—'}
+                    {c.angle?.observed && c.angle.verdict !== 'match' && (
+                      <span style={{ color: 'var(--ca)', fontStyle: 'normal' }}> → {c.angle.observed}</span>
+                    )}
+                  </span>
+                </div>
                 <div className="t-c"><span className={`t-ang ${c.product}`}>{c.product.toUpperCase()}</span></div>
                 <div className="t-c"><div className="t-st"><div className={`std ${c.status}`} /><span className="stt">{c.statusLabel}</span></div></div>
                 <div className="t-c hs">
@@ -367,10 +408,33 @@ export default function Dashboard({ snapshot }: { snapshot: Snapshot }) {
             <div className="tp-kv">
               <div className="tp-kv-r"><span className="tp-kv-k">Status</span><span className="tp-kv-v">{panel.statusLabel}</span></div>
               <div className="tp-kv-r"><span className="tp-kv-k">Lever changed</span><span className="tp-kv-v">{panel.changedLever ?? '—'}</span></div>
-              <div className="tp-kv-r"><span className="tp-kv-k">Ad type</span><span className="tp-kv-v">{panel.adType ?? '—'}</span></div>
               <div className="tp-kv-r"><span className="tp-kv-k">Assignee</span><span className="tp-kv-v">{panel.assignee ?? 'Unassigned'}</span></div>
-              <div className="tp-kv-r"><span className="tp-kv-k">Verified</span><span className="tp-kv-v">{panel.analysed ? `${panel.mismatchCount} mismatches` : 'Not yet analysed'}</span></div>
+              {panel.durationSec != null && (
+                <div className="tp-kv-r"><span className="tp-kv-k">Duration</span><span className="tp-kv-v">{panel.durationSec.toFixed(1)}s</span></div>
+              )}
+              {panel.cutsPerMinute != null && (
+                <div className="tp-kv-r"><span className="tp-kv-k">Cut rate</span><span className="tp-kv-v">{panel.cutsPerMinute.toFixed(0)}/min</span></div>
+              )}
             </div>
+
+            {panel.analysed ? (
+              <div>
+                <div className="tp-hook-lbl">ClickUp vs. the creative</div>
+                <Dual field="Angle" v={panel.angle} />
+                <Dual field="Persona" v={panel.persona} />
+                <Dual field="Production Style" v={panel.productionStyle} />
+                <Dual field="Creative Structure" v={panel.creativeStructure} />
+                <Dual field="Hook Type" v={panel.hookType} />
+              </div>
+            ) : (
+              <div className="dv">
+                <div className="dv-side">
+                  <span className="dv-val none">
+                    This creative has not been analysed yet, so only ClickUp&rsquo;s side exists.
+                  </span>
+                </div>
+              </div>
+            )}
             {panel.verdicts.length > 0 && (
               <div className="tp-kv">
                 {panel.verdicts.map((v) => (

@@ -217,6 +217,7 @@ button{font-family:inherit}
 .vb.match{background:#D1FAE5;color:var(--v-match)}
 .vb.mismatch{background:#FCE7F3;color:var(--v-mismatch)}
 .vb.missing{background:#FEF3C7;color:var(--v-missing)}
+.vb.differs{background:#ECEAFF;color:var(--ad)}
 .vb.unverifiable{background:var(--surf2);color:var(--v-unver)}
 
 /* ── KEYWORD / LIST ROWS (blueprint .d-it) ── */
@@ -344,3 +345,19 @@ button{font-family:inherit}
   body{cursor:auto}
   #cur{display:none}
 }
+
+/* ── DUAL VALUE (ClickUp vs the creative) ── */
+.dv{border:1px solid var(--brd);border-radius:4px;overflow:hidden}
+.dv+.dv{margin-top:10px}
+.dv-hd{display:flex;align-items:center;justify-content:space-between;gap:8px;
+  padding:7px 12px;background:var(--surf2);border-bottom:1px solid var(--brd)}
+.dv-fld{font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--ink2)}
+.dv-side{display:flex;align-items:flex-start;gap:10px;padding:9px 12px;font-size:12px}
+.dv-side+.dv-side{border-top:1px solid var(--brdl)}
+.dv-src{font-size:9px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;
+  color:var(--ink3);min-width:60px;flex-shrink:0;padding-top:2px}
+.dv-val{font-weight:600;color:var(--ink);flex:1}
+.dv-val.none{font-weight:400;color:var(--ink3)}
+.dv-why{padding:8px 12px 10px 82px;font-size:11px;line-height:1.5;color:var(--ink2);
+  font-style:italic;border-top:1px solid var(--brdl);background:var(--surf2)}
+.dv-conf{font-size:9px;font-weight:700;color:var(--ink3);font-variant-numeric:tabular-nums}

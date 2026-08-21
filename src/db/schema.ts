@@ -17,6 +17,8 @@ export const verdictKind = pgEnum('verdict_kind', [
   'match',          // ClickUp and the creative agree
   'mismatch',       // they disagree — ClickUp is likely wrong
   'missing',        // ClickUp blank, the creative supplied a value
+  'differs',        // both hold a considered view and they diverge; neither is
+                    // authoritative. Angle and Persona only ever reach this.
   'unverifiable',   // the creative cannot settle this field (Angle, Persona)
   'no_claim_no_obs',
 ])

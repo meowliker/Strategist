@@ -14,7 +14,8 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "drive:check": "tsx --env-file=.env src/scripts/drive-preflight.ts",
-    "backfill": "tsx --env-file=.env src/scripts/backfill.ts"
+    "backfill": "tsx --env-file=.env src/scripts/backfill.ts",
+    "snapshot": "tsx --env-file=.env src/scripts/snapshot.ts"
   },
   "devDependencies": {
     "@types/node": "^26.2.0",

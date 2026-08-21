@@ -40,11 +40,24 @@ describe('compareField', () => {
     expect(r.resolved).toBeNull()
   })
 
-  it('never hard-overrules an interpretive field', () => {
-    const r = compareField({ spec: spec('persona'), claimed: 'Stressed Women 25-45', observed: 'Men 30-50', confidence: 0.99, evidence: 'male narrator' })
-    expect(r.verdict).toBe('unverifiable')
-    // The human's value survives — a model cannot prove who an ad was made for.
+  it('records an interpretive divergence as two views, not an error', () => {
+    const r = compareField({ spec: spec('persona'), claimed: 'Stressed Women 25-45', observed: 'Adult Women With ADHD', confidence: 0.9, evidence: 'female narrator, ADHD language on screen' })
+    expect(r.verdict).toBe('differs')
+    // The human's value stays authoritative — a model cannot prove intent —
+    // but both readings are kept so the team can compare them.
     expect(r.resolved).toBe('Stressed Women 25-45')
+    expect(r.observed).toBe('Adult Women With ADHD')
+  })
+
+  it('matches an interpretive field when both readings agree', () => {
+    const r = compareField({ spec: spec('angle'), claimed: 'Free Bundle / Offer-Led', observed: 'free bundle / offer-led', confidence: 0.9, evidence: null })
+    expect(r.verdict).toBe('match')
+  })
+
+  it('never marks an interpretive field a mismatch, however confident', () => {
+    const r = compareField({ spec: spec('angle'), claimed: 'Value Stack', observed: 'Monetization', confidence: 1, evidence: null })
+    expect(r.verdict).not.toBe('mismatch')
+    expect(r.verdict).toBe('differs')
   })
 
   it('downgrades a low-confidence objective disagreement rather than calling it wrong', () => {
@@ -77,7 +90,7 @@ describe('compareAll', () => {
     // and hook_type was simply absent from ClickUp.
     expect(countMismatches(fields)).toBe(1)
     expect(fields.find((f) => f.field === 'hook_type')!.verdict).toBe('missing')
-    expect(fields.find((f) => f.field === 'persona')!.verdict).toBe('unverifiable')
+    expect(fields.find((f) => f.field === 'persona')!.verdict).toBe('differs')
   })
 
   it('returns a row for every spec', () => {

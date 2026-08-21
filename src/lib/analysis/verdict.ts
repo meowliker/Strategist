@@ -123,9 +123,10 @@ export function compareField(input: CompareInput): ComparedField {
 
   // They disagree. What that means depends on how knowable the field is.
   if (spec.verifiability === 'interpretive') {
-    // The creative only signals intent. Report the divergence, keep the human's
-    // value, and never call it a mismatch.
-    return { ...base, verdict: 'unverifiable', resolved: claimed }
+    // Angle and Persona describe intent. The creative signals it but cannot
+    // prove it, so a divergence is two defensible readings rather than an
+    // error. Both are surfaced; the human's value stays authoritative.
+    return { ...base, verdict: 'differs', resolved: claimed }
   }
 
   if ((confidence ?? 0) < CONFIDENCE_FLOOR) {

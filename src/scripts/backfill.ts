@@ -47,7 +47,29 @@ async function main() {
   if (only) winners = winners.filter((w) => w.name === only || w.id === only)
   if (limit) winners = winners.slice(0, limit)
 
-  console.log(`Backfilling ${winners.length} winners\n`)
+  // House vocabulary per product. This is the team's existing label set across
+  // the product — never the label on the creative being analysed — so derived
+  // labels stay comparable with hand-tagged ones.
+  const vocabRows = await db
+    .select({ product: tasks.productName, angle: tasks.claimedAngle, persona: tasks.claimedPersona })
+    .from(tasks)
+    .where(isNull(tasks.duplicateOfTaskId))
+
+  const vocabulary = new Map<string, { angles: string[]; personas: string[] }>()
+  for (const row of vocabRows) {
+    const v = vocabulary.get(row.product) ?? { angles: [], personas: [] }
+    if (row.angle && !v.angles.includes(row.angle)) v.angles.push(row.angle)
+    if (row.persona && !v.personas.includes(row.persona)) v.personas.push(row.persona)
+    vocabulary.set(row.product, v)
+  }
+
+  console.log(`Backfilling ${winners.length} winners`)
+  for (const [product, v] of vocabulary) {
+    if (winners.some((w) => w.product === product)) {
+      console.log(`  vocabulary · ${product}: ${v.angles.length} angles, ${v.personas.length} personas`)
+    }
+  }
+  console.log()
 
   let done = 0, failed = 0, totalIn = 0, totalOut = 0, totalMismatch = 0
 
@@ -84,6 +106,7 @@ async function main() {
 
         const { observation, usage } = await analyseBlind(anthropic, {
           frames, transcript, meta, cuts, filename: file.name,
+          vocabulary: vocabulary.get(w.product),
         })
         totalIn += usage.input_tokens
         totalOut += usage.output_tokens
@@ -114,8 +137,8 @@ async function main() {
           observedProductionStyle: observation.production_style,
           observedHookType: observation.hook_type,
           observedFunnel: observation.funnel,
-          observedAngleSignal: observation.angle_signal,
-          observedPersonaSignal: observation.persona_signal,
+          observedAngleSignal: observation.angle,
+          observedPersonaSignal: observation.persona,
           hookText: observation.hook_text, ctaText: observation.cta_text,
           painPoints: observation.pain_points,
           confidence: {
@@ -124,11 +147,15 @@ async function main() {
             creative_structure: observation.creative_structure_confidence,
             hook_type: observation.hook_type_confidence,
             funnel: observation.funnel_confidence,
+            angle: observation.angle_confidence,
+            persona: observation.persona_confidence,
           },
           evidence: {
             production_style: observation.production_style_evidence,
             creative_structure: observation.creative_structure_evidence,
             hook_type: observation.hook_type_evidence,
+            angle: observation.angle_rationale,
+            persona: observation.persona_rationale,
           },
           model: MODEL, promptVersion: PROMPT_VERSION,
         }).onConflictDoNothing()
@@ -141,8 +168,8 @@ async function main() {
           {
             ad_type: observation.ad_type, production_style: observation.production_style,
             creative_structure: observation.creative_structure, hook_type: observation.hook_type,
-            funnel: observation.funnel, angle: observation.angle_signal,
-            persona: observation.persona_signal,
+            funnel: observation.funnel, angle: observation.angle,
+            persona: observation.persona,
           },
           {
             ad_type: observation.ad_type_confidence,
@@ -150,11 +177,15 @@ async function main() {
             creative_structure: observation.creative_structure_confidence,
             hook_type: observation.hook_type_confidence,
             funnel: observation.funnel_confidence,
+            angle: observation.angle_confidence,
+            persona: observation.persona_confidence,
           },
           {
             production_style: observation.production_style_evidence,
             creative_structure: observation.creative_structure_evidence,
             hook_type: observation.hook_type_evidence,
+            angle: observation.angle_rationale,
+            persona: observation.persona_rationale,
           },
         )
 
@@ -180,13 +211,12 @@ async function main() {
         totalMismatch += mism
         done++
         console.log(
-          `    ✓ ${file.name.padEnd(30).slice(0, 30)} ${observation.production_style.padEnd(20).slice(0, 20)}` +
-          ` ${mism ? `${mism} mismatch` : 'agrees'}` +
-          (observation.hook_text ? `  "${observation.hook_text.slice(0, 42)}"` : ''),
+          `    ✓ ${file.name.padEnd(26).slice(0, 26)} ${observation.angle.padEnd(28).slice(0, 28)}` +
+          `${observation.persona.padEnd(26).slice(0, 26)} ${mism ? `${mism} mismatch` : 'agrees'}`,
         )
       } catch (e) {
         failed++
-        console.log(`    ✗ ${file.name} — ${(e as Error).message.slice(0, 70)}`)
+        console.log(`    ✗ ${file.name} — ${(e as Error).message.slice(0, 400)}`)
       } finally {
         await rm(work, { recursive: true, force: true })
       }

@@ -40,9 +40,17 @@ export const ObservationSchema = z.object({
   funnel: z.enum(['TOF', 'MOF', 'BOF']),
   funnel_confidence: conf,
 
-  /** Interpretive — a signal read off the creative, never a claim about intent. */
-  angle_signal: z.string(),
-  persona_signal: z.string(),
+  /**
+   * Interpretive fields. These describe intent, which a creative can signal but
+   * never prove, so they sit alongside ClickUp's value rather than replacing it.
+   * Both readings are shown to the team.
+   */
+  angle: z.string(),
+  angle_rationale: z.string(),
+  angle_confidence: conf,
+  persona: z.string(),
+  persona_rationale: z.string(),
+  persona_confidence: conf,
 
   /** Verbatim on-screen text in the opening seconds. The most reusable artefact. */
   hook_text: z.string(),
@@ -76,8 +84,16 @@ Rules:
 - Confidence is your genuine certainty. Use a value below 0.6 when the frames
   are ambiguous. Overconfident guesses are worse than admitting uncertainty,
   because a confident wrong answer will overwrite a human's correct label.
-- angle_signal and persona_signal describe what the creative SIGNALS about who
-  it targets and what it argues. Phrase them as observations, not conclusions.
+- angle is the persuasive argument the creative makes. persona is who it is
+  visibly speaking to. Give each as a SHORT Title Case label — the same shape as
+  the house vocabulary you are shown, e.g. "Free Bundle / Offer-Led" or
+  "Adult Women With ADHD". Reuse an existing house label whenever one genuinely
+  fits; coin a new one in the same style only when none does. Never return a
+  sentence, and never return "Unknown" — commit to your best reading and let the
+  confidence score carry your uncertainty.
+- angle_rationale and persona_rationale must cite what in the creative led you
+  there: specific on-screen text, what the speaker says, who appears on camera,
+  or the visual setting.
 - search_keywords should be short, concrete phrases that would actually work
   typed into a search box. Avoid generic marketing words like "engaging" or
   "high converting".`
@@ -101,9 +117,18 @@ export interface BlindInput {
   meta: MediaMeta
   cuts: number
   filename: string
+  /**
+   * The team's existing Angle/Persona labels across this product.
+   *
+   * This is the house vocabulary, NOT this creative's label — the analyser
+   * still never learns what ClickUp says about the creative in front of it.
+   * Supplying the vocabulary keeps derived labels comparable with hand-tagged
+   * ones instead of spawning a parallel naming system.
+   */
+  vocabulary?: { angles: string[]; personas: string[] }
 }
 
-export const PROMPT_VERSION = 1
+export const PROMPT_VERSION = 2
 export const MODEL = 'claude-opus-5'
 
 /**
@@ -144,6 +169,14 @@ export async function analyseBlind(
       ? `Transcript:\n${input.transcript.text}`
       : 'No speech detected in the audio.',
     input.transcript?.hookSpoken ? `\nSpoken in first 3s: "${input.transcript.hookSpoken}"` : '',
+    input.vocabulary?.angles.length
+      ? `\n\nHouse angle vocabulary used elsewhere in this product (reuse when one fits):\n` +
+        input.vocabulary.angles.map((a) => `- ${a}`).join('\n')
+      : '',
+    input.vocabulary?.personas.length
+      ? `\n\nHouse persona vocabulary (reuse when one fits):\n` +
+        input.vocabulary.personas.map((p) => `- ${p}`).join('\n')
+      : '',
   ].join('\n')
 
   const response = await client.messages.parse({
