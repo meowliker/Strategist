@@ -8,7 +8,7 @@
     "build": "next build",
     "start": "next start",
     "worker": "tsx src/worker/index.ts",
-    "sync": "tsx src/scripts/sync.ts",
+    "sync": "tsx --env-file=.env src/scripts/sync.ts",
     "db:push": "drizzle-kit push",
     "db:generate": "drizzle-kit generate",
     "test": "vitest run",

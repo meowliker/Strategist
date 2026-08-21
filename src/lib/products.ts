@@ -33,14 +33,18 @@ export const WINNING_STATUSES = ['winner', 'mild winner', 'scale'] as const
 export const LOSING_STATUSES = ['loser'] as const
 
 /**
- * Statuses where the creative has actually been in market. Only these belong in
- * a win-rate denominator — a task sitting in `in production` was never tested,
- * so counting it as a loss would understate every format.
+ * Statuses with a DECIDED outcome. Only these belong in a win-rate denominator.
+ *
+ * `testing` is deliberately excluded: those creatives are in market but not yet
+ * judged, so counting them as wins inflates every rate to 100%, and counting
+ * them as losses deflates it. They belong in neither half of the fraction until
+ * someone marks them.
+ *
+ * `in production` and friends never reached market at all.
  */
-export const TESTED_STATUSES = [
+export const DECIDED_STATUSES = [
   ...WINNING_STATUSES,
   ...LOSING_STATUSES,
-  'testing',
 ] as const
 
 export type WinCategory = 'winner' | 'mild_winner' | 'scale' | 'loser' | 'untested'

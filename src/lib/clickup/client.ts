@@ -96,6 +96,7 @@ export class ClickUpClient {
           page: String(page),
           subtasks: 'true',
           include_closed: 'true',
+          include_markdown_description: 'true',
           // Statuses are deliberately unfiltered: losers are the denominator for
           // win rate and the only signal Instagram Growth Bundle currently has.
         },
