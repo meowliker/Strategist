@@ -12,7 +12,8 @@
     "db:push": "drizzle-kit push",
     "db:generate": "drizzle-kit generate",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "drive:check": "tsx --env-file=.env src/scripts/drive-preflight.ts"
   },
   "devDependencies": {
     "@types/node": "^26.2.0",
@@ -24,6 +25,7 @@
     "vitest": "^4.1.11"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.120.0",
     "drizzle-orm": "^0.45.2",
     "googleapis": "^176.0.0",
     "next": "^15.5.23",
