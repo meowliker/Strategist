@@ -215,3 +215,68 @@ export const syncRuns = pgTable('sync_runs', {
   creativesQueued: integer('creatives_queued').notNull().default(0),
   error: text('error'),
 })
+
+/* ── Narrative research: the strategic read of a creative ─────────────────────
+ * The observations table answers "what is this creative". This answers "how
+ * does it work and why". Derived from the same blind pass — no ClickUp text —
+ * but written as analysis a strategist can act on rather than taxonomy.
+ * ─────────────────────────────────────────────────────────────────────────── */
+
+export const research = pgTable('research', {
+  creativeId: text('creative_id').primaryKey().references(() => creatives.id, { onDelete: 'cascade' }),
+
+  /** Rich format description, e.g. "VO-driven UGC — repurposed TikTok tutorial". */
+  formatDescription: text('format_description').notNull(),
+  /** The mechanism the hook uses, in plain words. */
+  hookMechanism: text('hook_mechanism').notNull(),
+  /** One sentence: what this creative actually is. */
+  coreConcept: text('core_concept').notNull(),
+  /** Why it was built this way — the bet the creative is making. */
+  creativeHypothesis: text('creative_hypothesis').notNull(),
+
+  /** Ordered beats of the script, the shape the argument moves through. */
+  scriptArc: jsonb('script_arc').$type<{ beat: string; detail: string }[]>().notNull().default([]),
+  /** Scene-by-scene for caption-led creatives with no voiceover. */
+  scenes: jsonb('scenes').$type<{ n: number; visual: string; onScreenText: string }[]>().notNull().default([]),
+
+  /** What is physically happening on screen — hands, herbs, page flips. */
+  tactileElements: jsonb('tactile_elements').$type<string[]>().notNull().default([]),
+  /** Evidence the creative is repurposed organic rather than produced for ads. */
+  repurposedSignals: text('repurposed_signals'),
+  /** A visible creator handle or watermark, when one appears. */
+  sourceHandle: text('source_handle'),
+
+  model: text('model').notNull(),
+  promptVersion: integer('prompt_version').notNull().default(1),
+  analysedAt: timestamp('analysed_at', { withTimezone: true }).notNull().defaultNow(),
+})
+
+/* ── Per-product synthesis across every analysed creative ─────────────────── */
+
+export const synthesis = pgTable('synthesis', {
+  productKey: text('product_key').primaryKey(),
+  productName: text('product_name').notNull(),
+
+  hookFormulas: jsonb('hook_formulas').$type<{
+    rank: number; hookType: string; example: string; whyItWorks: string
+    wins: number; losses: number
+  }[]>().notNull().default([]),
+
+  /** What separates full winners from mild winners, grounded in the creatives. */
+  winnerVsMild: jsonb('winner_vs_mild').$type<string[]>().notNull().default([]),
+
+  huntFor: jsonb('hunt_for').$type<{
+    priority: number; title: string; evidence: string
+    lookFor: string[]; signals: string[]
+  }[]>().notNull().default([]),
+
+  avoid: jsonb('avoid').$type<{ thing: string; reason: string }[]>().notNull().default([]),
+
+  /** The single pattern most worth replicating next. */
+  topPattern: text('top_pattern'),
+
+  winnersAnalysed: integer('winners_analysed').notNull().default(0),
+  losersAnalysed: integer('losers_analysed').notNull().default(0),
+  model: text('model').notNull(),
+  generatedAt: timestamp('generated_at', { withTimezone: true }).notNull().defaultNow(),
+})
