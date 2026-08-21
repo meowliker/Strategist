@@ -4,6 +4,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import Cursor from './Cursor'
 import type { ProductKey } from '../lib/data/types'
+import { PRODUCTS as CONFIGURED } from '../lib/products'
 
 export const PAGES = [
   { href: '/', n: '01', label: 'Overview' },
@@ -14,12 +15,10 @@ export const PAGES = [
   { href: '/research', n: '06', label: 'Research' },
 ]
 
+/** Derived from the product config so a new product appears here automatically. */
 export const PRODUCTS: { key: ProductKey | 'all'; label: string; short: string }[] = [
   { key: 'all', label: 'All products', short: 'All' },
-  { key: 'hh', label: 'Herbal Healing', short: 'Herbal' },
-  { key: 'ad', label: 'ADHD', short: 'ADHD' },
-  { key: 'ca', label: 'Canva Mastery', short: 'Canva' },
-  { key: 'ig', label: 'Instagram Growth', short: 'Instagram' },
+  ...CONFIGURED.map((p) => ({ key: p.key as ProductKey, label: p.name, short: p.short })),
 ]
 
 /**

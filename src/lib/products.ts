@@ -2,21 +2,43 @@
  * The only ClickUp lists this system reads. Scope is deliberately narrow —
  * adding a product means adding it here and nowhere else.
  */
+/** Short key used throughout the app and in the ?product= query string. */
+export type ProductKey = 'hh' | 'ad' | 'ca' | 'ig' | 'km' | 'ot'
+
 export interface ProductConfig {
+  /** Short key used in URLs, CSS classes and the data layer */
+  key: Exclude<ProductKey, 'ot'>
   /** ClickUp list id */
   listId: string
   /** Display name in the dashboard */
   name: string
+  /** Short label for the product switcher */
+  short: string
   /** Task-name prefix used by this list, e.g. "HH-027-INS-014" */
   codes: string[]
 }
 
+/**
+ * Every product the system reads. Adding one is a single entry here — the
+ * list→key map, the switcher and the colour tokens all derive from this.
+ */
 export const PRODUCTS: ProductConfig[] = [
-  { listId: '901613416500', name: 'Herbal Healing Handbook', codes: ['HH', 'HHH', 'Herbal'] },
-  { listId: '901613119887', name: 'ADHD', codes: ['AD', 'ADHD'] },
-  { listId: '901613035012', name: 'Canva Mastery', codes: ['CA'] },
-  { listId: '901615920553', name: 'Instagram Growth Bundle', codes: ['IG', 'IGB'] },
+  { key: 'hh', listId: '901613416500', name: 'Herbal Healing Handbook', short: 'Herbal', codes: ['HH', 'HHH', 'Herbal'] },
+  { key: 'ad', listId: '901613119887', name: 'ADHD', short: 'ADHD', codes: ['AD', 'ADHD'] },
+  { key: 'ca', listId: '901613035012', name: 'Canva Mastery', short: 'Canva', codes: ['CA'] },
+  { key: 'ig', listId: '901615920553', name: 'Instagram Growth Bundle', short: 'Instagram', codes: ['IG', 'IGB'] },
+  { key: 'km', listId: '901613118174', name: 'Kids Mental Health', short: 'Kids MH', codes: ['KM', 'KMH'] },
 ]
+
+/** ClickUp list id → short product key. */
+export const LIST_TO_KEY: Record<string, ProductKey> = Object.fromEntries(
+  PRODUCTS.map((p) => [p.listId, p.key]),
+)
+
+export const keyToProduct = (key: string): ProductConfig | undefined =>
+  PRODUCTS.find((p) => p.key === key)
+
+export const PRODUCT_KEYS = PRODUCTS.map((p) => p.key)
 
 export const LIST_IDS = PRODUCTS.map((p) => p.listId)
 

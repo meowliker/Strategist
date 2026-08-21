@@ -12,10 +12,8 @@ import { db } from '../db/client'
 import type { Snapshot, CreativeRow, FormatRow, KeywordRow, ProductKey, StatusKey, DualValue, VerdictKey } from '../lib/data/types'
 import { PRODUCT_LABEL, STATUS_LABEL } from '../lib/data/types'
 import { computeTrust } from '../lib/data/trust'
+import { LIST_TO_KEY } from '../lib/products'
 
-const LIST_TO_KEY: Record<string, ProductKey> = {
-  '901613416500': 'hh', '901613119887': 'ad', '901613035012': 'ca', '901615920553': 'ig',
-}
 const CAT_TO_KEY: Record<string, StatusKey> = {
   winner: 'win', mild_winner: 'mild', scale: 'scale', loser: 'loss', untested: 'un',
 }

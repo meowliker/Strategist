@@ -13,6 +13,7 @@
   --ad:#3F34D4;     /* ADHD            */
   --ca:#C97800;     /* Canva Mastery   */
   --ig:#C01858;     /* Instagram Growth*/
+  --km:#6E3473;     /* Kids Mental Health */
 
   /* Verification verdict colours */
   --v-match:#0A9960;--v-mismatch:#C01858;--v-missing:#C97800;--v-unver:#8A877E;
@@ -138,6 +139,7 @@ button{font-family:inherit}
 .ar.ad::before{background:var(--ad)}
 .ar.ca::before{background:var(--ca)}
 .ar.ig::before{background:var(--ig)}
+.ar.km::before{background:var(--km)}
 .ar.ot::before{background:var(--ink3)}
 .ar:hover{background:var(--surf)}
 .ar:hover::before{width:3px}
@@ -184,6 +186,7 @@ button{font-family:inherit}
 .t-row:hover .t-stripe{opacity:1}
 .t-stripe.hh{background:var(--hh-c)}.t-stripe.ad{background:var(--ad)}
 .t-stripe.ca{background:var(--ca)}.t-stripe.ig{background:var(--ig)}
+.t-stripe.km{background:var(--km)}
 .t-stripe.ot{background:var(--ink3)}
 .t-c{padding:12px 14px}
 .t-id{font-family:'SF Mono','Fira Code',Consolas,monospace;font-size:12px;font-weight:600;color:var(--ink)}
@@ -192,6 +195,7 @@ button{font-family:inherit}
 .t-ang{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase}
 .t-ang.hh{color:var(--hh-c)}.t-ang.ad{color:var(--ad)}
 .t-ang.ca{color:var(--ca)}.t-ang.ig{color:var(--ig)}
+.t-ang.km{color:var(--km)}
 .t-ang.ot{color:var(--ink3)}
 .t-st{display:flex;align-items:center;gap:7px}
 .std{width:6px;height:6px;border-radius:50%;flex-shrink:0}
@@ -231,6 +235,7 @@ button{font-family:inherit}
 .d-stripe{width:3px;height:24px;border-radius:2px}
 .d-stripe.hh{background:var(--hh-c)}.d-stripe.ad{background:var(--ad)}
 .d-stripe.ca{background:var(--ca)}.d-stripe.ig{background:var(--ig)}
+.d-stripe.km{background:var(--km)}
 .d-nm{font-family:'SF Mono',Consolas,monospace;font-size:11px;font-weight:600;color:var(--ink)}
 .d-ds{font-size:12px;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .d-fmt{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3)}
@@ -290,6 +295,7 @@ button{font-family:inherit}
 .tp-angle-badge.ad{background:#ECEAFF;color:var(--ad)}
 .tp-angle-badge.ca{background:#FEF3C7;color:var(--ca)}
 .tp-angle-badge.ig{background:#FCE7F3;color:var(--ig)}
+.tp-angle-badge.km{background:#EFE4F2;color:var(--km)}
 .tp-angle-badge.ot{background:var(--surf2);color:var(--ink2)}
 .tp-hook-lbl{font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
   color:var(--ink3);margin-bottom:8px}
@@ -421,6 +427,7 @@ button{font-family:inherit}
 .fcard.ad::before{background:var(--ad)}
 .fcard.ca::before{background:var(--ca)}
 .fcard.ig::before{background:var(--ig)}
+.fcard.km::before{background:var(--km)}
 .fcard.ot::before{background:var(--ink3)}
 
 .fc-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}

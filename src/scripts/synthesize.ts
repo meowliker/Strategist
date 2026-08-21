@@ -12,6 +12,7 @@ import { z } from 'zod'
 import { sql } from 'drizzle-orm'
 import { db } from '../db/client'
 import { synthesis } from '../db/schema'
+import { LIST_TO_KEY } from '../lib/products'
 
 const MODEL = 'claude-opus-5'
 const COST_IN = 5 / 1_000_000
@@ -74,9 +75,6 @@ interface Row {
   observed_structure: string | null; observed_style: string | null
 }
 
-const LIST_TO_KEY: Record<string, string> = {
-  '901613416500': 'hh', '901613119887': 'ad', '901613035012': 'ca', '901615920553': 'ig',
-}
 
 async function main() {
   const anthropic = new Anthropic()
