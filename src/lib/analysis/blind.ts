@@ -77,6 +77,10 @@ human wrote about it, and you must not speculate about what such a label might
 say. Judge only what is actually visible and audible.
 
 Rules:
+- If the transcript appears to be song lyrics or background music (repetitive
+  lines, rhyming verses, music-style phrasing), IGNORE the transcript entirely.
+  For music-style creatives, rely only on what is visible in the frames: on-screen
+  text overlays, captions, and visual cues. Do not quote or reference song lyrics.
 - hook_text must be the on-screen text in the opening seconds, transcribed
   VERBATIM. If there is no on-screen text, return an empty string. Never
   paraphrase and never invent text you cannot see.
