@@ -41,8 +41,8 @@ export default function CreativesTable({ snapshot }: { snapshot: Snapshot }) {
   const inView = useMemo(() => {
     if (view === 'watched') return snapshot.creatives.filter((c) => c.analysed)
     if (view === 'winners') return snapshot.creatives.filter((c) => c.status === 'win' || c.status === 'mild' || c.status === 'scale')
-    if (view === 'music') return snapshot.creatives.filter((c) => c.analysed && isMusicStyle(c))
-    if (view === 'voiceover') return snapshot.creatives.filter((c) => c.analysed && isVoiceoverStyle(c))
+    if (view === 'music') return snapshot.creatives.filter((c) => c.analysed && (c.status === 'win' || c.status === 'mild' || c.status === 'scale') && isMusicStyle(c))
+    if (view === 'voiceover') return snapshot.creatives.filter((c) => c.analysed && (c.status === 'win' || c.status === 'mild' || c.status === 'scale') && isVoiceoverStyle(c))
     return snapshot.creatives
   }, [view, snapshot.creatives])
 
@@ -75,8 +75,8 @@ export default function CreativesTable({ snapshot }: { snapshot: Snapshot }) {
           .map((c) => c.taskId),
       ).size,
     },
-    { key: 'music', label: '🎵 Music', count: snapshot.creatives.filter((c) => c.analysed && isMusicStyle(c)).length },
-    { key: 'voiceover', label: '🎙 Voiceover', count: snapshot.creatives.filter((c) => c.analysed && isVoiceoverStyle(c)).length },
+    { key: 'music', label: '🎵 Music', count: snapshot.creatives.filter((c) => c.analysed && (c.status === 'win' || c.status === 'mild' || c.status === 'scale') && isMusicStyle(c)).length },
+    { key: 'voiceover', label: '🎙 Voiceover', count: snapshot.creatives.filter((c) => c.analysed && (c.status === 'win' || c.status === 'mild' || c.status === 'scale') && isVoiceoverStyle(c)).length },
     { key: 'all', label: 'All tasks', count: snapshot.creatives.length },
   ]
 
