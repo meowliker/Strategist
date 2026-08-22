@@ -126,6 +126,7 @@ export default function JobControls({ product }: { product: string | null }) {
           </span>
           <span className="jl-line">{active.log[active.log.length - 1] ?? 'starting…'}</span>
           <button className="jl-x" onClick={() => setDismissed(true)} aria-label="Hide">✕</button>
+          <div className="jl-bar"><div className="jl-bar-fill" /></div>
         </div>
       )}
     </>

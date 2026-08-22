@@ -663,7 +663,7 @@ button{font-family:inherit}
   animation:jbp 1s ease-in-out infinite;flex-shrink:0}
 @keyframes jbp{50%{opacity:.25}}
 
-#joblog{position:fixed;bottom:0;left:0;right:0;z-index:540;
+#joblog{position:fixed;bottom:0;left:0;right:0;z-index:540;overflow:hidden;
   background:var(--ink);color:rgba(255,255,255,.82);
   font-family:'SF Mono',Consolas,monospace;font-size:11px;line-height:1.6;
   padding:9px 20px;display:flex;align-items:center;gap:14px;
@@ -674,6 +674,9 @@ button{font-family:inherit}
 .jl-x{appearance:none;border:none;background:transparent;cursor:none;
   color:rgba(255,255,255,.4);font-size:12px;flex-shrink:0}
 .jl-x:hover{color:#fff}
+.jl-bar{position:absolute;bottom:0;left:0;right:0;height:2px;background:rgba(255,255,255,.12);overflow:hidden}
+.jl-bar-fill{height:100%;width:40%;background:var(--g);animation:jl-slide 1.4s ease-in-out infinite}
+@keyframes jl-slide{0%{transform:translateX(-100%)}100%{transform:translateX(350%)}}
 
 /* ── LOGIN ── */
 .login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
