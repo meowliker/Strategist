@@ -712,3 +712,34 @@ button{font-family:inherit}
 .combo-l{color:#c0392b}
 .combo-notice{margin:0 48px 16px;padding:12px 16px;background:rgba(201,120,0,.08);
   border:1px solid rgba(201,120,0,.3);border-radius:6px;font-size:12px;color:var(--ca);line-height:1.5}
+
+/* ── BRIEF GENERATOR ── */
+.brief-wrap{padding:0 48px 80px;display:flex;flex-direction:column;gap:40px;max-width:860px}
+.brief-input-block{display:flex;flex-direction:column;gap:12px}
+.brief-input-hdr{display:flex;align-items:center;justify-content:space-between}
+.brief-lbl{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2)}
+.brief-chars{font-size:11px;color:var(--ink3)}
+.brief-ta{width:100%;font-family:'SF Mono',Consolas,monospace;font-size:12px;line-height:1.6;
+  color:var(--ink);background:var(--surf);border:1px solid var(--brd);border-radius:6px;
+  padding:14px 16px;resize:vertical;outline:none;transition:border-color .14s}
+.brief-ta:focus{border-color:var(--ink2)}
+.brief-btn{appearance:none;border:none;cursor:pointer;background:var(--ink);color:var(--bg);
+  font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  padding:12px 24px;border-radius:4px;align-self:flex-start;transition:background .14s}
+.brief-btn:hover:not(:disabled){background:#1E1C15}
+.brief-btn:disabled{opacity:.45}
+.brief-btn.loading{background:var(--ink2)}
+.brief-error{font-size:12px;color:#c0392b;padding:8px 12px;background:rgba(192,57,43,.07);
+  border:1px solid rgba(192,57,43,.2);border-radius:4px}
+.brief-out{display:flex;flex-direction:column;gap:0;border:1px solid var(--brd);border-radius:8px;overflow:hidden}
+.brief-out-hdr{display:flex;align-items:center;justify-content:space-between;
+  padding:14px 20px;background:var(--ink);color:var(--bg)}
+.brief-out-ttl{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+.brief-copy{appearance:none;border:1px solid rgba(255,255,255,.25);background:transparent;
+  color:rgba(255,255,255,.7);font-size:11px;font-weight:600;padding:4px 12px;border-radius:3px;cursor:pointer}
+.brief-copy:hover{color:#fff;border-color:rgba(255,255,255,.6)}
+.brief-section{padding:20px 24px;border-bottom:1px solid var(--brd)}
+.brief-section:last-child{border-bottom:none}
+.brief-sec-ttl{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ink2);margin-bottom:8px}
+.brief-sec-body{font-size:13px;line-height:1.7;color:var(--ink);white-space:pre-wrap}
