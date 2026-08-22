@@ -663,18 +663,19 @@ button{font-family:inherit}
   animation:jbp 1s ease-in-out infinite;flex-shrink:0}
 @keyframes jbp{50%{opacity:.25}}
 
-#joblog{position:fixed;bottom:0;left:0;right:0;z-index:540;overflow:hidden;
+#joblog{position:fixed;bottom:20px;right:20px;z-index:540;overflow:hidden;
   background:var(--ink);color:rgba(255,255,255,.82);
   font-family:'SF Mono',Consolas,monospace;font-size:11px;line-height:1.6;
-  padding:9px 20px;display:flex;align-items:center;gap:14px;
-  border-top:1px solid rgba(255,255,255,.1)}
+  padding:10px 14px;display:flex;flex-direction:column;gap:6px;
+  border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,.3);min-width:240px;max-width:320px}
+.jl-header{display:flex;align-items:center;gap:10px}
 .jl-tag{font-weight:800;letter-spacing:.08em;text-transform:uppercase;font-size:9px;
   color:var(--g);flex-shrink:0}
-.jl-line{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
-.jl-x{appearance:none;border:none;background:transparent;cursor:none;
-  color:rgba(255,255,255,.4);font-size:12px;flex-shrink:0}
+.jl-line{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;font-size:10px;color:rgba(255,255,255,.6)}
+.jl-x{appearance:none;border:none;background:transparent;cursor:pointer;
+  color:rgba(255,255,255,.4);font-size:12px;flex-shrink:0;margin-left:auto}
 .jl-x:hover{color:#fff}
-.jl-bar{position:absolute;bottom:0;left:0;right:0;height:2px;background:rgba(255,255,255,.12);overflow:hidden}
+.jl-bar{height:2px;background:rgba(255,255,255,.12);overflow:hidden;border-radius:2px}
 .jl-bar-fill{height:100%;width:40%;background:var(--g);animation:jl-slide 1.4s ease-in-out infinite}
 @keyframes jl-slide{0%{transform:translateX(-100%)}100%{transform:translateX(350%)}}
 
