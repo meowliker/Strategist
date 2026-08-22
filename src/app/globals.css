@@ -663,7 +663,7 @@ button{font-family:inherit}
   animation:jbp 1s ease-in-out infinite;flex-shrink:0}
 @keyframes jbp{50%{opacity:.25}}
 
-#joblog{position:fixed;bottom:20px;right:20px;z-index:540;overflow:hidden;
+#joblog{position:fixed;top:56px;right:20px;z-index:540;overflow:hidden;
   background:var(--ink);color:rgba(255,255,255,.82);
   font-family:'SF Mono',Consolas,monospace;font-size:11px;line-height:1.6;
   padding:10px 14px;display:flex;flex-direction:column;gap:6px;
