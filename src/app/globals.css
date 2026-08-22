@@ -743,3 +743,6 @@ button{font-family:inherit}
 .brief-sec-ttl{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;
   color:var(--ink2);margin-bottom:8px}
 .brief-sec-body{font-size:13px;line-height:1.7;color:var(--ink);white-space:pre-wrap}
+.brief-product-tag{font-size:12px;color:var(--ink2);padding:8px 14px;background:var(--surf);
+  border:1px solid var(--brd);border-radius:4px;align-self:flex-start}
+.brief-product-tag strong{color:var(--ink)}

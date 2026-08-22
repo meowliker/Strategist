@@ -2,10 +2,12 @@
 import { useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Suspense } from 'react'
+import { PRODUCTS } from '../../components/Chrome'
 
 function BriefInner() {
   const params = useSearchParams()
   const product = params.get('product') ?? 'all'
+  const productLabel = PRODUCTS.find(p => p.key === product)?.label ?? 'All products'
   const [transcript, setTranscript] = useState('')
   const [brief, setBrief] = useState('')
   const [loading, setLoading] = useState(false)
@@ -56,6 +58,14 @@ function BriefInner() {
       </div>
 
       <div className="brief-wrap">
+        {product === 'all' && (
+          <div className="brief-error">
+            ⚠ No product selected — switch to a specific product in the top dropdown so the brief uses that product&apos;s winning data.
+          </div>
+        )}
+        {product !== 'all' && (
+          <div className="brief-product-tag">Using winning data for: <strong>{productLabel}</strong></div>
+        )}
         <div className="brief-input-block">
           <div className="brief-input-hdr">
             <label className="brief-lbl">Inspiration transcript</label>
