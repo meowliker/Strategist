@@ -740,9 +740,14 @@ button{font-family:inherit}
 .brief-copy:hover{color:#fff;border-color:rgba(255,255,255,.6)}
 .brief-section{padding:20px 24px;border-bottom:1px solid var(--brd)}
 .brief-section:last-child{border-bottom:none}
-.brief-sec-ttl{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;
-  color:var(--ink2);margin-bottom:8px}
-.brief-sec-body{font-size:13px;line-height:1.7;color:var(--ink);white-space:pre-wrap}
+.brief-sec-ttl{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ink2);margin-bottom:10px}
+.brief-sec-body{font-size:13px;line-height:1.7;color:var(--ink);display:flex;flex-direction:column;gap:6px}
+.brief-line{margin:0}
+.brief-line-bullet{margin:0;padding-left:4px}
+.brief-section-vo{background:var(--surf2)}
+.brief-section-vo .brief-sec-ttl{color:var(--ink);font-size:12px}
+.brief-section-vo .brief-sec-body{font-size:14px;line-height:1.8;font-family:Georgia,serif}
 .brief-product-tag{font-size:12px;color:var(--ink2);padding:8px 14px;background:var(--surf);
   border:1px solid var(--brd);border-radius:4px;align-self:flex-start}
 .brief-product-tag strong{color:var(--ink)}

@@ -96,7 +96,10 @@ Format, talent description, setting, pacing, caption style. Concrete — not gen
 Bullet list of specific things that lose for this product.
 
 ## CTA
-The exact call-to-action line to use.`
+The exact call-to-action line to use.
+
+## Voiceover Script
+Write the complete voiceover as a single flowing paragraph — exactly what the talent reads, start to finish. No beat labels, no asterisks, no formatting. Just the words, in order. Match the character count of the inspiration transcript (±10%).`
 
   const message = await client.messages.create({
     model: 'claude-sonnet-4-6',

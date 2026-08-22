@@ -46,6 +46,18 @@ function BriefInner() {
     return { title: s.slice(0, nl).trim(), body: s.slice(nl + 1).trim() }
   }) : []
 
+  const renderBody = (text: string) => {
+    // Parse **bold** and bullet lines
+    return text.split('\n').map((line, i) => {
+      const parts = line.split(/\*\*(.+?)\*\*/g)
+      return (
+        <p key={i} className={line.startsWith('-') || /^\d+\./.test(line) ? 'brief-line-bullet' : 'brief-line'}>
+          {parts.map((p, j) => j % 2 === 1 ? <strong key={j}>{p}</strong> : p)}
+        </p>
+      )
+    })
+  }
+
   return (
     <>
       <div className="phead">
@@ -95,9 +107,9 @@ function BriefInner() {
               <button className="brief-copy" onClick={copy}>{copied ? 'Copied!' : 'Copy all'}</button>
             </div>
             {sections.map((s, i) => (
-              <div className="brief-section" key={i}>
+              <div className={`brief-section${s.title === 'Voiceover Script' ? ' brief-section-vo' : ''}`} key={i}>
                 <div className="brief-sec-ttl">{s.title}</div>
-                <div className="brief-sec-body">{s.body}</div>
+                <div className="brief-sec-body">{renderBody(s.body)}</div>
               </div>
             ))}
           </div>
