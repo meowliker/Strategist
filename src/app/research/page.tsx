@@ -1,5 +1,5 @@
 import { readProduct } from '../../lib/data/select'
-import { loadResearch, loadSynthesis } from '../../lib/data/research'
+import { loadResearch, loadSynthesis, loadCombinations } from '../../lib/data/research'
 import ResearchList from '../../components/ResearchList'
 
 export const dynamic = 'force-dynamic'
@@ -8,7 +8,7 @@ export default async function Research({
   searchParams,
 }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const product = readProduct(await searchParams)
-  const [cards, syntheses] = await Promise.all([loadResearch(product), loadSynthesis(product)])
+  const [cards, syntheses, combos] = await Promise.all([loadResearch(product), loadSynthesis(product), loadCombinations(product)])
 
   const winners = cards.filter((c) => c.tier !== 'loss' && c.tier !== 'un')
   const losers = cards.filter((c) => c.tier === 'loss')
@@ -121,6 +121,69 @@ export default async function Research({
           )}
         </section>
       ))}
+
+      {(combos.bets.length > 0 || combos.dying.length > 0) && (
+        <section>
+          {combos.bets.length > 0 && (
+            <>
+              <div className="sec-hdr">
+                <h2 className="sec-ttl" style={{ fontSize: 22 }}>Combinations to bet on</h2>
+                <span className="sec-sub">angle × persona × hook type — ranked by wins</span>
+              </div>
+              <div className="combo-list">
+                {combos.bets.map((c, i) => (
+                  <div className="combo-row" key={i}>
+                    <div className="combo-n">{String(i + 1).padStart(2, '0')}</div>
+                    <div className="combo-body">
+                      <span className="combo-tag">{c.angle}</span>
+                      <span className="combo-sep">×</span>
+                      <span className="combo-tag">{c.persona}</span>
+                      <span className="combo-sep">×</span>
+                      <span className="combo-tag">{c.hookType}</span>
+                    </div>
+                    <div className="combo-score">
+                      <span className="combo-w">{c.wins}W</span>
+                      {c.losses > 0 && <span className="combo-l"> / {c.losses}L</span>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+
+          {combos.dying.length > 0 && (
+            <>
+              <div className="sec-hdr" style={{ marginTop: 32 }}>
+                <h2 className="sec-ttl" style={{ fontSize: 22 }}>What&rsquo;s dying — don&rsquo;t bother</h2>
+                <span className="sec-sub">0 wins, at least 1 loss</span>
+              </div>
+              <div className="combo-list dying">
+                {combos.dying.map((c, i) => (
+                  <div className="combo-row" key={i}>
+                    <div className="combo-n">✗</div>
+                    <div className="combo-body">
+                      <span className="combo-tag">{c.angle}</span>
+                      <span className="combo-sep">×</span>
+                      <span className="combo-tag">{c.persona}</span>
+                      <span className="combo-sep">×</span>
+                      <span className="combo-tag">{c.hookType}</span>
+                    </div>
+                    <div className="combo-score combo-l">{c.losses}L</div>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+
+          {combos.fadingPatterns.length > 0 && (
+            <div style={{ padding: '16px 48px 0' }}>
+              <ul className="sy-list sy-avoid">
+                {combos.fadingPatterns.map((p, i) => <li key={i}>{p}</li>)}
+              </ul>
+            </div>
+          )}
+        </section>
+      )}
 
       <div className="sec-hdr">
         <h2 className="sec-ttl" style={{ fontSize: 26 }}>Winning creatives, taken apart</h2>

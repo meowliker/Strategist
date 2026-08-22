@@ -134,3 +134,88 @@ export async function loadSynthesis(product: ProductKey | 'all'): Promise<Synthe
     }))
     .filter((r) => product === 'all' || r.productKey === product)
 }
+
+export interface Combination {
+  angle: string
+  persona: string
+  hookType: string
+  wins: number
+  losses: number
+  creativeIds: string[]
+}
+
+export interface CombinationInsights {
+  bets: Combination[]       // winning combos, sorted by wins desc
+  dying: Combination[]      // losing-only combos
+  fadingPatterns: string[]  // angles/hook types with high loss rate
+}
+
+export async function loadCombinations(product: ProductKey | 'all'): Promise<CombinationInsights> {
+  try {
+    const productFilter = product !== 'all' ? sql`and t.list_id = (
+      select list_id from (values
+        ('hh','901613416500'),('ad','901613119887'),('ca','901613035012'),
+        ('ig','901615920553'),('km','901613118174'),('kl','901613067126')
+      ) as p(k,lid) where k = ${product}
+    )` : sql``
+
+    const rows = (await db.execute(sql`
+      select
+        coalesce(nullif(trim(o.observed_angle_signal),''), nullif(trim(t.claimed_angle),''), 'Unknown') as angle,
+        coalesce(nullif(trim(o.observed_persona_signal),''), nullif(trim(t.claimed_persona),''), 'Unknown') as persona,
+        coalesce(nullif(trim(o.observed_hook_type),''), nullif(trim(t.claimed_hook_type),''), 'Unknown') as hook_type,
+        count(*) filter (where t.category in ('winner','mild_winner','scale'))::int as wins,
+        count(*) filter (where t.category = 'loser')::int as losses,
+        array_agg(c.id) as creative_ids
+      from observations o
+      join creatives c on c.id = o.creative_id
+      join tasks t on t.id = c.task_id
+      where t.category in ('winner','mild_winner','scale','loser')
+        and t.duplicate_of_task_id is null
+        ${productFilter}
+      group by 1,2,3
+      having count(*) > 0
+      order by wins desc, losses asc
+    `)) as unknown as { angle: string; persona: string; hook_type: string; wins: number; losses: number; creative_ids: string[] }[]
+
+    const all: Combination[] = rows.map(r => ({
+      angle: r.angle,
+      persona: r.persona,
+      hookType: r.hook_type,
+      wins: Number(r.wins ?? 0),
+      losses: Number(r.losses ?? 0),
+      creativeIds: r.creative_ids ?? [],
+    }))
+
+    const bets = all.filter(c => c.wins > 0).slice(0, 8)
+    const dying = all.filter(c => c.wins === 0 && c.losses > 0).slice(0, 5)
+
+    // Detect fading patterns: angles or hook types that are net negative
+    const angleMap: Record<string, { wins: number; losses: number }> = {}
+    const hookMap: Record<string, { wins: number; losses: number }> = {}
+    for (const c of all) {
+      if (!angleMap[c.angle]) angleMap[c.angle] = { wins: 0, losses: 0 }
+      angleMap[c.angle].wins += c.wins
+      angleMap[c.angle].losses += c.losses
+      if (!hookMap[c.hookType]) hookMap[c.hookType] = { wins: 0, losses: 0 }
+      hookMap[c.hookType].wins += c.wins
+      hookMap[c.hookType].losses += c.losses
+    }
+
+    const fadingPatterns: string[] = []
+    for (const [angle, { wins, losses }] of Object.entries(angleMap)) {
+      if (angle === 'Unknown') continue
+      if (losses >= 2 && wins === 0) fadingPatterns.push(`"${angle}" angle is 0W / ${losses}L — avoid`)
+      else if (losses > wins * 2 && losses >= 2) fadingPatterns.push(`"${angle}" angle has high loss rate (${wins}W / ${losses}L)`)
+    }
+    for (const [hook, { wins, losses }] of Object.entries(hookMap)) {
+      if (hook === 'Unknown') continue
+      if (losses >= 2 && wins === 0) fadingPatterns.push(`"${hook}" hook type is 0W / ${losses}L — kill this`)
+    }
+
+    return { bets, dying, fadingPatterns }
+  } catch (e) {
+    console.error('[combinations] query failed:', (e as Error).message)
+    return { bets: [], dying: [], fadingPatterns: [] }
+  }
+}

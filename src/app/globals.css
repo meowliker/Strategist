@@ -696,3 +696,17 @@ button{font-family:inherit}
 .login-go:hover:not(:disabled){background:#1E1C15}
 .login-go:disabled{opacity:.45}
 .login-err{font-size:12px;color:var(--ig)}
+
+/* ── COMBINATIONS ── */
+.combo-list{padding:0 48px 8px;display:flex;flex-direction:column;gap:6px}
+.combo-row{display:flex;align-items:center;gap:14px;padding:10px 14px;
+  background:var(--surf);border:1px solid var(--brd);border-radius:6px}
+.dying .combo-row{opacity:.7}
+.combo-n{font-size:11px;font-weight:800;color:var(--ink3);width:20px;flex-shrink:0;text-align:right}
+.combo-body{flex:1;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.combo-tag{font-size:12px;font-weight:600;color:var(--ink);background:var(--surf2);
+  border:1px solid var(--brd);border-radius:4px;padding:2px 8px}
+.combo-sep{font-size:11px;color:var(--ink3)}
+.combo-score{font-size:12px;font-weight:700;flex-shrink:0}
+.combo-w{color:var(--g)}
+.combo-l{color:#c0392b}
