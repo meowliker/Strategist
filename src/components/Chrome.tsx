@@ -14,7 +14,6 @@ export const PAGES = [
   { href: '/keywords', n: '04', label: 'Keywords' },
   { href: '/verification', n: '05', label: 'Verification' },
   { href: '/research', n: '06', label: 'Research' },
-  { href: '/brief', n: '07', label: 'Brief' },
 ]
 
 /** Derived from the product config so a new product appears here automatically. */
