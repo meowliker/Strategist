@@ -90,7 +90,7 @@ hear. If the frames are too sparse to support a claim, say what is actually
 visible instead of filling the gap.`
 
 export const DEEP_PROMPT_VERSION = 2
-export const DEEP_MODEL = 'claude-opus-5'
+export const DEEP_MODEL = 'claude-sonnet-4-6'
 
 function selectFrames(frames: Frame[], max = 12): Frame[] {
   if (frames.length <= max) return frames

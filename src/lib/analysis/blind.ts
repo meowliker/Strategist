@@ -129,7 +129,7 @@ export interface BlindInput {
 }
 
 export const PROMPT_VERSION = 2
-export const MODEL = 'claude-opus-5'
+export const MODEL = 'claude-sonnet-4-6'
 
 /**
  * Classifies a creative with no sight of ClickUp.
