@@ -5,16 +5,22 @@ import CreativeModal from './CreativeModal'
 
 type View = 'watched' | 'winners' | 'music' | 'voiceover' | 'all'
 
-const isMusicStyle = (c: { productionStyle?: { claimed?: string | null; observed?: string | null }; hookType?: { claimed?: string | null; observed?: string | null } }) => {
-  const text = [c.productionStyle?.observed, c.productionStyle?.claimed, c.hookType?.observed, c.hookType?.claimed]
-    .filter(Boolean).join(' ').toLowerCase()
-  return /music|song|ugc.music|sound.on|caption.only|caption.led|no.voiceover|no.vo\b/.test(text)
+const isMusicStyle = (c: { productionStyle?: { claimed?: string | null; observed?: string | null }; creativeStructure?: { claimed?: string | null; observed?: string | null }; hookType?: { claimed?: string | null; observed?: string | null } }) => {
+  const text = [
+    c.productionStyle?.observed, c.productionStyle?.claimed,
+    c.creativeStructure?.observed, c.creativeStructure?.claimed,
+    c.hookType?.observed, c.hookType?.claimed,
+  ].filter(Boolean).join(' ').toLowerCase()
+  return /music|song|slideshow|animation|static.graphic|caption.only|caption.led|no.voiceover|sound.on/.test(text)
 }
 
-const isVoiceoverStyle = (c: { productionStyle?: { claimed?: string | null; observed?: string | null }; hookType?: { claimed?: string | null; observed?: string | null } }) => {
-  const text = [c.productionStyle?.observed, c.productionStyle?.claimed, c.hookType?.observed, c.hookType?.claimed]
-    .filter(Boolean).join(' ').toLowerCase()
-  return /voiceover|voice.over|\bvo\b|narrat|spoken|talking.head|to.camera/.test(text)
+const isVoiceoverStyle = (c: { productionStyle?: { claimed?: string | null; observed?: string | null }; creativeStructure?: { claimed?: string | null; observed?: string | null }; hookType?: { claimed?: string | null; observed?: string | null } }) => {
+  const text = [
+    c.productionStyle?.observed, c.productionStyle?.claimed,
+    c.creativeStructure?.observed, c.creativeStructure?.claimed,
+    c.hookType?.observed, c.hookType?.claimed,
+  ].filter(Boolean).join(' ').toLowerCase()
+  return /voiceover|voice.over|ai.*voiceover|ugc|testimonial|tutorial|story|hook.*offer|listicle|interview|skit|to.camera|talking.head|narrat/.test(text)
 }
 
 const AV = ['av-a', 'av-b', 'av-c', 'av-d']
