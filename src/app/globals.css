@@ -710,3 +710,5 @@ button{font-family:inherit}
 .combo-score{font-size:12px;font-weight:700;flex-shrink:0}
 .combo-w{color:var(--g)}
 .combo-l{color:#c0392b}
+.combo-notice{margin:0 48px 16px;padding:12px 16px;background:rgba(201,120,0,.08);
+  border:1px solid rgba(201,120,0,.3);border-radius:6px;font-size:12px;color:var(--ca);line-height:1.5}

@@ -151,6 +151,13 @@ export default async function Research({
             </>
           )}
 
+          {combos.dying.length === 0 && losers.length === 0 && (
+            <div className="combo-notice">
+              ⚠ No losers marked for this product yet — the &ldquo;What&rsquo;s dying&rdquo; comparison can&rsquo;t be built.
+              Mark losing tasks in ClickUp, sync, and re-enrich to see what&rsquo;s not working.
+            </div>
+          )}
+
           {combos.dying.length > 0 && (
             <>
               <div className="sec-hdr" style={{ marginTop: 32 }}>
