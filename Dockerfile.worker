@@ -1,0 +1,25 @@
+# ── Worker service ─────────────────────────────────────────────────────────────
+# Runs the media pipeline: Drive download, ffmpeg, Whisper, then the model calls.
+# Whisper pulls PyTorch, so this image is deliberately separate from the web one.
+FROM node:24-slim
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      ffmpeg python3 python3-pip python3-venv git ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# CPU-only torch keeps this near 1.5GB instead of ~6GB with the CUDA build,
+# which is what you want on a container with no GPU.
+RUN python3 -m venv /opt/venv \
+    && /opt/venv/bin/pip install --no-cache-dir \
+         torch --index-url https://download.pytorch.org/whl/cpu \
+    && /opt/venv/bin/pip install --no-cache-dir openai-whisper
+ENV PATH="/opt/venv/bin:$PATH"
+
+WORKDIR /app
+COPY package.json package-lock.json* ./
+RUN npm ci --ignore-scripts || npm install --ignore-scripts
+COPY . .
+
+ENV NODE_ENV=production
+# Overridden per run; the default keeps a scheduled container useful.
+CMD ["sh", "-c", "npm run sync && npm run backfill && npm run enrich && npm run synthesize && npm run snapshot"]
