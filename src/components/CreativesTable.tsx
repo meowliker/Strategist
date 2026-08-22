@@ -3,7 +3,19 @@ import { useMemo, useState } from 'react'
 import type { Snapshot } from '../lib/data/types'
 import CreativeModal from './CreativeModal'
 
-type View = 'watched' | 'winners' | 'all'
+type View = 'watched' | 'winners' | 'music' | 'voiceover' | 'all'
+
+const isMusicStyle = (c: { productionStyle?: { claimed?: string | null; observed?: string | null }; hookType?: { claimed?: string | null; observed?: string | null } }) => {
+  const text = [c.productionStyle?.observed, c.productionStyle?.claimed, c.hookType?.observed, c.hookType?.claimed]
+    .filter(Boolean).join(' ').toLowerCase()
+  return /music|song|ugc.music|sound.on|caption.only|caption.led|no.voiceover|no.vo\b/.test(text)
+}
+
+const isVoiceoverStyle = (c: { productionStyle?: { claimed?: string | null; observed?: string | null }; hookType?: { claimed?: string | null; observed?: string | null } }) => {
+  const text = [c.productionStyle?.observed, c.productionStyle?.claimed, c.hookType?.observed, c.hookType?.claimed]
+    .filter(Boolean).join(' ').toLowerCase()
+  return /voiceover|voice.over|\bvo\b|narrat|spoken|talking.head|to.camera/.test(text)
+}
 
 const AV = ['av-a', 'av-b', 'av-c', 'av-d']
 const avatar = (n: string | null) => {
@@ -22,11 +34,9 @@ export default function CreativesTable({ snapshot }: { snapshot: Snapshot }) {
 
   const inView = useMemo(() => {
     if (view === 'watched') return snapshot.creatives.filter((c) => c.analysed)
-    if (view === 'winners') {
-      return snapshot.creatives.filter(
-        (c) => c.status === 'win' || c.status === 'mild' || c.status === 'scale',
-      )
-    }
+    if (view === 'winners') return snapshot.creatives.filter((c) => c.status === 'win' || c.status === 'mild' || c.status === 'scale')
+    if (view === 'music') return snapshot.creatives.filter((c) => c.analysed && isMusicStyle(c))
+    if (view === 'voiceover') return snapshot.creatives.filter((c) => c.analysed && isVoiceoverStyle(c))
     return snapshot.creatives
   }, [view, snapshot.creatives])
 
@@ -59,6 +69,8 @@ export default function CreativesTable({ snapshot }: { snapshot: Snapshot }) {
           .map((c) => c.taskId),
       ).size,
     },
+    { key: 'music', label: '🎵 Music', count: snapshot.creatives.filter((c) => c.analysed && isMusicStyle(c)).length },
+    { key: 'voiceover', label: '🎙 Voiceover', count: snapshot.creatives.filter((c) => c.analysed && isVoiceoverStyle(c)).length },
     { key: 'all', label: 'All tasks', count: snapshot.creatives.length },
   ]
 
