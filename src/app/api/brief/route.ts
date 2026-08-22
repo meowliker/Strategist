@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { loadSynthesis, loadCombinations } from '../../../lib/data/research'
+import { PRODUCTS } from '../../../lib/products'
 import type { ProductKey } from '../../../lib/data/types'
 
 export const dynamic = 'force-dynamic'
@@ -14,6 +15,8 @@ export async function POST(req: Request) {
   if (!transcript?.trim()) return NextResponse.json({ error: 'transcript required' }, { status: 400 })
 
   const productKey = (product ?? 'all') as ProductKey | 'all'
+  const productConfig = PRODUCTS.find(p => p.key === productKey)
+  const productName = productConfig?.name ?? 'this product'
   const [syntheses, combos] = await Promise.all([loadSynthesis(productKey), loadCombinations(productKey)])
 
   const synth = syntheses[0]
@@ -36,19 +39,24 @@ export async function POST(req: Request) {
 
   const SYSTEM = `You are a creative strategist writing ad briefs for a direct-response ecommerce brand.
 You are given:
-1. A transcript from an inspiration video (competitor or reference creative)
-2. Data on what actually wins for this product — combinations, hook formulas, vocabulary, patterns to avoid
+1. A transcript from an inspiration video (used ONLY for structure, pacing, and length — not for topic)
+2. The product you are writing for: ${productName}
+3. Data on what actually wins for ${productName} — combinations, hook formulas, vocabulary, patterns to avoid
 
-Your job: rewrite the transcript into a structured creative brief that uses what wins for this brand.
-Keep the total script content roughly the same character count as the input transcript (±10%).
+Your job: write a creative brief for ${productName} that:
+- Borrows the STRUCTURE and LENGTH of the inspiration transcript
+- Uses the winning angles, personas, hooks, and vocabulary for ${productName}
+- Is entirely about ${productName} — not about whatever the inspiration video was about
+- Keeps the total script content roughly the same character count as the input (±10%)
 Do not mention the source transcript or that you rewrote anything.
 Be specific and concrete — no filler, no generic advice.`
 
-  const USER = `INSPIRATION TRANSCRIPT (${charCount} characters):
+  const USER = `INSPIRATION TRANSCRIPT — use for structure/length only (${charCount} characters):
 ${transcript}
 
 ---
-WHAT WINS FOR THIS PRODUCT:
+PRODUCT: ${productName}
+WHAT WINS FOR ${productName.toUpperCase()}:
 
 Top combinations (angle × persona × hook type):
 ${topCombos || 'Not enough data yet.'}
