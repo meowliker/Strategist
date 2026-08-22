@@ -112,6 +112,14 @@ export default function JobControls({ product }: { product: string | null }) {
           {toEnrich > 0 && !running && <span className="jb-n">{toEnrich}</span>}
         </button>
 
+        <button className={`jb${jobBusy('sync') ? ' busy' : ''}`}
+          disabled={busy !== null || running}
+          onClick={() => start('sync')}
+          title="Pull latest winning tasks from ClickUp">
+          {jobBusy('sync') && <span className="jb-spin" />}
+          Sync ClickUp
+        </button>
+
         <button className={`jb${jobBusy('snapshot') ? ' busy' : ''}`}
           disabled={busy !== null}
           onClick={refresh} title="Rebuild the dashboard view from the database">
