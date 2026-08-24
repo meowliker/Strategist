@@ -21,6 +21,11 @@
 
   --hh:52px;--nh:46px;
 }
+[data-theme="dark"]{
+  --bg:#0E0D0B;--ink:#F0EEE7;--ink2:#7A776E;--ink3:#3D3B35;
+  --surf:#1A1915;--surf2:#141310;--brd:#2A2820;--brdl:#211F1A;
+  --gd:#52C41A;
+}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;cursor:none!important}
 input,textarea,select{cursor:text!important}
 html{scroll-behavior:smooth;cursor:none}
@@ -44,7 +49,7 @@ button{font-family:inherit}
 
 /* ── HEADER ── */
 #hdr{position:fixed;top:0;left:0;right:0;z-index:500;height:var(--hh);
-  background:rgba(240,238,231,.93);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  background:color-mix(in srgb,var(--bg) 93%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
   border-bottom:1px solid var(--brd);display:flex;align-items:center;padding:0 40px;gap:16px}
 .hdr-mark{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;
   letter-spacing:.14em;text-transform:uppercase}
@@ -65,7 +70,7 @@ button{font-family:inherit}
 
 /* ── SECTION NAV ── */
 #snav{position:fixed;top:var(--hh);left:0;right:0;z-index:490;height:var(--nh);
-  background:rgba(240,238,231,.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
   border-bottom:1px solid var(--brd);display:flex;flex-direction:column;
   justify-content:flex-end;overflow:hidden}
 .snav-row{display:flex;align-items:stretch;padding:0 40px;position:relative;height:100%}
@@ -744,3 +749,5 @@ button{font-family:inherit}
 }
 
 .hk-card-chevron{margin-left:4px;font-size:9px;opacity:.6}
+
+.theme-toggle{font-size:14px;padding:4px 10px;line-height:1}

@@ -35,6 +35,24 @@ export default function Chrome({ syncedAt, live }: { syncedAt: string; live: boo
   const params = useSearchParams()
   const product = (params.get('product') ?? 'all') as ProductKey | 'all'
   const [open, setOpen] = useState(false)
+  const [dark, setDark] = useState(false)
+
+  useEffect(() => {
+    const saved = localStorage.getItem('theme')
+    if (saved === 'dark') { setDark(true); document.documentElement.setAttribute('data-theme', 'dark') }
+  }, [])
+
+  const toggleDark = () => {
+    const next = !dark
+    setDark(next)
+    if (next) {
+      document.documentElement.setAttribute('data-theme', 'dark')
+      localStorage.setItem('theme', 'dark')
+    } else {
+      document.documentElement.removeAttribute('data-theme')
+      localStorage.setItem('theme', 'light')
+    }
+  }
   const indicator = useRef<HTMLDivElement>(null)
   const navRow = useRef<HTMLDivElement>(null)
   const menu = useRef<HTMLDivElement>(null)
@@ -106,6 +124,9 @@ export default function Chrome({ syncedAt, live }: { syncedAt: string; live: boo
           <div className={`s-dot${live ? ' live' : ''}`} />
           <span>{syncedAt}</span>
         </div>
+        <button className="hb theme-toggle" onClick={toggleDark} aria-label="Toggle dark mode">
+          {dark ? '☀︎' : '◑'}
+        </button>
         <a className="hb dark" href="https://app.clickup.com/9016762494/v/f/90168119851"
           target="_blank" rel="noopener">ClickUp ↗</a>
       </header>
