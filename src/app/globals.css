@@ -713,3 +713,16 @@ button{font-family:inherit}
 .combo-notice{margin:0 48px 16px;padding:12px 16px;background:rgba(201,120,0,.08);
   border:1px solid rgba(201,120,0,.3);border-radius:6px;font-size:12px;color:var(--ca);line-height:1.5}
 
+
+/* ── HOOKS PAGE ── */
+.hooks-wrap{padding:0 48px 80px;display:flex;flex-direction:column;gap:48px}
+.hooks-group{}
+.hooks-angle{display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--brd)}
+.hooks-angle-name{font-size:13px;font-weight:800;letter-spacing:.04em;color:var(--ink)}
+.hooks-angle-count{font-size:11px;font-weight:600;color:var(--ink3);background:var(--surf);border:1px solid var(--brd);border-radius:10px;padding:1px 8px}
+.hooks-list{display:flex;flex-direction:column;gap:0}
+.hooks-row{display:flex;align-items:baseline;justify-content:space-between;gap:24px;padding:10px 0;border-bottom:1px solid var(--brd2)}
+.hooks-row:last-child{border-bottom:none}
+.hooks-text{font-size:13px;line-height:1.55;color:var(--ink);flex:1}
+.hooks-meta{display:flex;align-items:center;gap:7px;flex-shrink:0}
+.hooks-status{font-size:11px;color:var(--ink3)}
