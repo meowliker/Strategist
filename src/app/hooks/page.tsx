@@ -1,14 +1,13 @@
 import { db } from '../../db/client'
 import { sql } from 'drizzle-orm'
 import { readProduct } from '../../lib/data/select'
-import { LIST_TO_KEY } from '../../lib/products'
-import type { ProductKey } from '../../lib/data/types'
+import HooksView, { type AngleGroup, type HookEntry } from '../../components/HooksView'
 
 export const dynamic = 'force-dynamic'
 
 interface HookRow {
-  creative_id: string
   task_id: string
+  task_name: string
   list_id: string
   category: string
   hook_text: string | null
@@ -20,7 +19,25 @@ interface HookRow {
 
 function isMusicStyle(row: HookRow) {
   const text = [row.production_style, row.creative_structure].filter(Boolean).join(' ').toLowerCase()
-  return /slideshow|animation|static.graphic|caption.only|caption.led|no.voiceover|sound.on|music|song/.test(text)
+  return /slideshow|animation|static.graphic|caption.only|caption.led|no.voiceover|sound.on|music\b|song/.test(text)
+}
+
+function looksLikeSongLyric(text: string) {
+  const t = text.toLowerCase()
+  // Repeated phrases (word word, word word) — classic song pattern
+  const words = t.split(/\s+/)
+  for (let i = 0; i < words.length - 2; i++) {
+    const bigram = words[i] + ' ' + words[i + 1]
+    if (bigram.length > 4 && (t.includes(bigram + ', ' + bigram) || t.split(bigram).length > 2)) return true
+  }
+  return false
+}
+
+function isJunkHook(text: string) {
+  const t = text.trim().toLowerCase()
+  if (t.length < 20) return true
+  if (/^(thanks for watching|hi all|h all|hey all|bye|goodbye|subscribe|follow me|link in bio)/.test(t)) return true
+  return false
 }
 
 export default async function HooksPage({
@@ -35,10 +52,11 @@ export default async function HooksPage({
       ) as p(k,lid) where k = ${product})`
     : sql``
 
+  // One row per TASK (not per creative variant) — pick any hook_text / hook_spoken for that task
   const rows = (await db.execute(sql`
-    select
-      c.id as creative_id,
+    select distinct on (t.id)
       t.id as task_id,
+      t.name as task_name,
       t.list_id,
       t.category::text as category,
       o.hook_text,
@@ -54,29 +72,48 @@ export default async function HooksPage({
       and t.duplicate_of_task_id is null
       and (o.hook_text is not null or tr.hook_spoken is not null)
       ${productFilter}
-    order by angle, t.name
+    order by t.id, c.variant_index nulls first
   `)) as unknown as HookRow[]
 
-  // Exclude music-style creatives (their "voiceover" is song lyrics)
-  const filtered = rows.filter((r) => !isMusicStyle(r))
+  // Build angle → { textMap, voiceoverMap } with dedup by exact text
+  const angleMap = new Map<string, {
+    textMap: Map<string, string[]>
+    voiceoverMap: Map<string, string[]>
+  }>()
 
-  // Deduplicate by hook text within each angle
-  const grouped = new Map<string, { hookTexts: Set<string>; hookSpokens: Set<string>; count: number }>()
-  for (const r of filtered) {
+  for (const r of rows) {
+    if (isMusicStyle(r)) continue
     const angle = r.angle ?? 'Unknown'
-    if (!grouped.has(angle)) grouped.set(angle, { hookTexts: new Set(), hookSpokens: new Set(), count: 0 })
-    const g = grouped.get(angle)!
-    if (r.hook_text?.trim()) g.hookTexts.add(r.hook_text.trim())
-    if (r.hook_spoken?.trim()) g.hookSpokens.add(r.hook_spoken.trim())
-    g.count++
+    if (!angleMap.has(angle)) angleMap.set(angle, { textMap: new Map(), voiceoverMap: new Map() })
+    const { textMap, voiceoverMap } = angleMap.get(angle)!
+    const label = r.task_name
+
+    if (r.hook_text?.trim() && !isJunkHook(r.hook_text)) {
+      const key = r.hook_text.trim()
+      if (!textMap.has(key)) textMap.set(key, [])
+      textMap.get(key)!.push(label)
+    }
+
+    if (r.hook_spoken?.trim() && !isJunkHook(r.hook_spoken) && !looksLikeSongLyric(r.hook_spoken)) {
+      const key = r.hook_spoken.trim()
+      if (!voiceoverMap.has(key)) voiceoverMap.set(key, [])
+      voiceoverMap.get(key)!.push(label)
+    }
   }
 
-  // Sort angles by total hook count desc
-  const sorted = [...grouped.entries()]
-    .sort((a, b) => b[1].count - a[1].count)
-    .filter(([, g]) => g.hookTexts.size > 0 || g.hookSpokens.size > 0)
+  const toEntries = (m: Map<string, string[]>): HookEntry[] =>
+    [...m.entries()].map(([text, creatives]) => ({ text, creatives }))
 
-  const totalHooks = sorted.reduce((n, [, g]) => n + g.hookTexts.size + g.hookSpokens.size, 0)
+  const groups: AngleGroup[] = [...angleMap.entries()]
+    .map(([angle, { textMap, voiceoverMap }]) => ({
+      angle,
+      textHooks: toEntries(textMap),
+      voiceoverHooks: toEntries(voiceoverMap),
+    }))
+    .filter((g) => g.textHooks.length + g.voiceoverHooks.length > 0)
+    .sort((a, b) => (b.textHooks.length + b.voiceoverHooks.length) - (a.textHooks.length + a.voiceoverHooks.length))
+
+  const totalHooks = groups.reduce((n, g) => n + g.textHooks.length + g.voiceoverHooks.length, 0)
 
   return (
     <>
@@ -84,41 +121,12 @@ export default async function HooksPage({
         <p className="phead-ey">07 · Hooks</p>
         <h1 className="phead-ttl">Winner hooks by angle</h1>
         <p className="phead-sub">
-          Hook lines from winning creatives, grouped by angle. Music-style creatives excluded.
-          {totalHooks > 0 && ` ${totalHooks} unique hooks across ${sorted.length} angles.`}
+          Hook lines from winning creatives, grouped by angle. Music-style creatives excluded. Click any hook to see which creative it came from.
+          {totalHooks > 0 && ` ${totalHooks} unique hooks across ${groups.length} angles.`}
         </p>
       </div>
 
-      {sorted.length === 0 && (
-        <div className="empty" style={{ margin: '48px' }}>
-          No winning creatives with hook text yet. Run Watch on winners first.
-        </div>
-      )}
-
-      <div className="hooks-wrap">
-        {sorted.map(([angle, g]) => (
-          <div className="hooks-group" key={angle}>
-            <div className="hooks-angle">
-              <span className="hooks-angle-name">{angle}</span>
-              <span className="hooks-angle-count">{g.hookTexts.size + g.hookSpokens.size}</span>
-            </div>
-            <div className="hooks-list">
-              {[...g.hookTexts].map((text, i) => (
-                <div className="hooks-row" key={`ht-${i}`}>
-                  <div className="hooks-text">{text}</div>
-                  <span className="hooks-kind hooks-kind-text">on-screen text</span>
-                </div>
-              ))}
-              {[...g.hookSpokens].map((text, i) => (
-                <div className="hooks-row" key={`hs-${i}`}>
-                  <div className="hooks-text">{text}</div>
-                  <span className="hooks-kind hooks-kind-vo">voiceover</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
+      <HooksView groups={groups} />
     </>
   )
 }

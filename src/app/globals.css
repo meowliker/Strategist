@@ -714,18 +714,22 @@ button{font-family:inherit}
   border:1px solid rgba(201,120,0,.3);border-radius:6px;font-size:12px;color:var(--ca);line-height:1.5}
 
 
+
 /* ── HOOKS PAGE ── */
-.hooks-wrap{padding:0 48px 80px;display:flex;flex-direction:column;gap:48px}
+.hooks-wrap{padding:0 48px 80px;display:flex;flex-direction:column;gap:56px}
 .hooks-group{}
-.hooks-angle{display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--brd)}
-.hooks-angle-name{font-size:13px;font-weight:800;letter-spacing:.04em;color:var(--ink)}
+.hooks-angle{display:flex;align-items:center;gap:10px;margin-bottom:20px;padding-bottom:12px;border-bottom:2px solid var(--ink)}
+.hooks-angle-name{font-size:14px;font-weight:800;letter-spacing:.03em;color:var(--ink)}
 .hooks-angle-count{font-size:11px;font-weight:600;color:var(--ink3);background:var(--surf);border:1px solid var(--brd);border-radius:10px;padding:1px 8px}
-.hooks-list{display:flex;flex-direction:column;gap:0}
-.hooks-row{display:flex;align-items:baseline;justify-content:space-between;gap:24px;padding:10px 0;border-bottom:1px solid var(--brd2)}
-.hooks-row:last-child{border-bottom:none}
-.hooks-text{font-size:13px;line-height:1.55;color:var(--ink);flex:1}
-.hooks-meta{display:flex;align-items:center;gap:7px;flex-shrink:0}
-.hooks-status{font-size:11px;color:var(--ink3)}
-.hooks-kind{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:3px;flex-shrink:0}
-.hooks-kind-text{background:rgba(0,0,0,.06);color:var(--ink2)}
-.hooks-kind-vo{background:rgba(80,120,220,.1);color:#4a6fd8}
+.hk-cols{display:grid;grid-template-columns:1fr 1fr;gap:32px}
+@media(max-width:860px){.hk-cols{grid-template-columns:1fr}}
+.hk-col{}
+.hk-col-hdr{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--ink2);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--brd)}
+.hk-col-list{display:flex;flex-direction:column;gap:8px}
+.hk-card{background:var(--surf);border:1px solid var(--brd);border-radius:6px;padding:12px 14px;cursor:none;transition:border-color .14s,box-shadow .14s}
+.hk-card:hover{border-color:var(--ink2);box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.hk-card-text{font-size:13px;line-height:1.55;color:var(--ink)}
+.hk-card-footer{margin-top:8px;display:flex;flex-direction:column;gap:6px}
+.hk-card-pill{display:inline-flex;align-items:center;font-size:10px;font-weight:700;letter-spacing:.04em;color:var(--ink3);background:var(--surf2);border:1px solid var(--brd);border-radius:10px;padding:1px 8px;align-self:flex-start}
+.hk-card-creatives{display:flex;flex-wrap:wrap;gap:5px;padding-top:2px}
+.hk-card-cname{font-size:11px;font-weight:600;color:var(--ink2);background:var(--surf2);border:1px solid var(--brd);border-radius:4px;padding:2px 8px}
