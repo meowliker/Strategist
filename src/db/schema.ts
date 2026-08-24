@@ -284,29 +284,3 @@ export const synthesis = pgTable('synthesis', {
   model: text('model').notNull(),
   generatedAt: timestamp('generated_at', { withTimezone: true }).notNull().defaultNow(),
 })
-
-/* ── Competitor ads — manually uploaded for analysis ────────────────────── */
-
-export const competitorAds = pgTable('competitor_ads', {
-  id: text('id').primaryKey(),
-  filename: text('filename').notNull(),
-  competitor: text('competitor'),
-  platform: text('platform'),
-  notes: text('notes'),
-  filePath: text('file_path').notNull(),
-  uploadedAt: timestamp('uploaded_at', { withTimezone: true }).notNull().defaultNow(),
-  analysedAt: timestamp('analysed_at', { withTimezone: true }),
-
-  /* analysis results */
-  hookText: text('hook_text'),
-  hookSpoken: text('hook_spoken'),
-  angle: text('angle'),
-  persona: text('persona'),
-  hookType: text('hook_type'),
-  productionStyle: text('production_style'),
-  creativeStructure: text('creative_structure'),
-  painPoints: jsonb('pain_points').$type<string[]>(),
-  ctaText: text('cta_text'),
-  durationSec: real('duration_sec'),
-  transcript: text('transcript'),
-})
