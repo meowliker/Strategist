@@ -22,6 +22,7 @@
   --hh:52px;--nh:46px;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;cursor:none!important}
+input,textarea,select{cursor:text!important}
 html{scroll-behavior:smooth;cursor:none}
 body{
   background:var(--bg);color:var(--ink);
@@ -370,8 +371,6 @@ button{font-family:inherit}
   color:var(--ink3);min-width:60px;flex-shrink:0;padding-top:2px}
 .dv-val{font-weight:600;color:var(--ink);flex:1}
 .dv-val.none{font-weight:400;color:var(--ink3)}
-.dv-why{padding:8px 12px 10px 82px;font-size:11px;line-height:1.5;color:var(--ink2);
-  font-style:italic;border-top:1px solid var(--brdl);background:var(--surf2)}
 .dv-conf{font-size:9px;font-weight:700;color:var(--ink3);font-variant-numeric:tabular-nums}
 
 /* ── PRODUCT SWITCHER ── */
@@ -599,7 +598,7 @@ button{font-family:inherit}
 .srch{position:relative;margin-left:14px;flex:1;max-width:300px;display:flex;align-items:center}
 .srch-in{width:100%;appearance:none;font-family:inherit;font-size:12px;color:var(--ink);
   background:var(--surf);border:1px solid var(--brd);border-radius:3px;
-  padding:6px 26px 6px 10px;outline:none;transition:border-color .12s;cursor:none}
+  padding:6px 26px 6px 10px;outline:none;transition:border-color .12s;cursor:text}
 .srch-in::placeholder{color:var(--ink3)}
 .srch-in:focus{border-color:var(--ink2)}
 .srch-in::-webkit-search-cancel-button{display:none}
@@ -709,7 +708,7 @@ button{font-family:inherit}
 .combo-sep{font-size:11px;color:var(--ink3)}
 .combo-score{font-size:12px;font-weight:700;flex-shrink:0}
 .combo-w{color:var(--g)}
-.combo-l{color:#c0392b}
+.combo-l{color:var(--ig)}
 .combo-notice{margin:0 48px 16px;padding:12px 16px;background:rgba(201,120,0,.08);
   border:1px solid rgba(201,120,0,.3);border-radius:6px;font-size:12px;color:var(--ca);line-height:1.5}
 
@@ -717,13 +716,13 @@ button{font-family:inherit}
 
 /* ── HOOKS PAGE ── */
 .hooks-wrap{padding:0 48px 80px;display:flex;flex-direction:column;gap:56px}
-.hooks-group{}
+
 .hooks-angle{display:flex;align-items:center;gap:10px;margin-bottom:20px;padding-bottom:12px;border-bottom:2px solid var(--ink)}
 .hooks-angle-name{font-size:14px;font-weight:800;letter-spacing:.03em;color:var(--ink)}
 .hooks-angle-count{font-size:11px;font-weight:600;color:var(--ink3);background:var(--surf);border:1px solid var(--brd);border-radius:10px;padding:1px 8px}
 .hk-cols{display:grid;grid-template-columns:1fr 1fr;gap:32px}
 @media(max-width:860px){.hk-cols{grid-template-columns:1fr}}
-.hk-col{}
+
 .hk-col-hdr{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--ink2);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--brd)}
 .hk-col-list{display:flex;flex-direction:column;gap:8px}
 .hk-card{background:var(--surf);border:1px solid var(--brd);border-radius:6px;padding:12px 14px;cursor:none;transition:border-color .14s,box-shadow .14s}
@@ -733,3 +732,15 @@ button{font-family:inherit}
 .hk-card-pill{display:inline-flex;align-items:center;font-size:10px;font-weight:700;letter-spacing:.04em;color:var(--ink3);background:var(--surf2);border:1px solid var(--brd);border-radius:10px;padding:1px 8px;align-self:flex-start}
 .hk-card-creatives{display:flex;flex-wrap:wrap;gap:5px;padding-top:2px}
 .hk-card-cname{font-size:11px;font-weight:600;color:var(--ink2);background:var(--surf2);border:1px solid var(--brd);border-radius:4px;padding:2px 8px}
+
+/* ── MOBILE OVERRIDES (≤ 640px) ── */
+@media(max-width:640px){
+  #s1,.sec-hdr,.phead,.rs,.sy,.sy-hunt,.rl-bar,.combo-list,.combo-notice,.hooks-wrap{padding-left:20px;padding-right:20px}
+  .filt{padding:12px 20px}
+  .t-hd,.t-row{grid-template-columns:3px 1fr auto auto}
+  .hs{display:none}
+  .mdl{width:100%;border-radius:12px 12px 0 0}
+  #modal{align-items:flex-end}
+}
+
+.hk-card-chevron{margin-left:4px;font-size:9px;opacity:.6}

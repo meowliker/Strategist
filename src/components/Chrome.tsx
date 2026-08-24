@@ -114,7 +114,8 @@ export default function Chrome({ syncedAt, live }: { syncedAt: string; live: boo
         <div className="snav-row" ref={navRow}>
           {PAGES.map((p) => (
             <Link key={p.href} href={withProduct(p.href)}
-              className={`snav-btn${pathname === p.href ? ' act' : ''}`}>
+              className={`snav-btn${pathname === p.href ? ' act' : ''}`}
+              aria-current={pathname === p.href ? 'page' : undefined}>
               <span className="nb">{p.n}</span>{p.label}
             </Link>
           ))}

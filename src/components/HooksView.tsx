@@ -14,12 +14,23 @@ export interface AngleGroup {
 
 function HookCard({ entry }: { entry: HookEntry }) {
   const [open, setOpen] = useState(false)
+  const toggle = () => setOpen((o) => !o)
   return (
-    <div className="hk-card" onClick={() => setOpen((o) => !o)}>
+    <div
+      className="hk-card"
+      role="button"
+      tabIndex={0}
+      aria-expanded={open}
+      onClick={toggle}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle() } }}
+    >
       <div className="hk-card-text">{entry.text}</div>
       {entry.creatives.length > 0 && (
         <div className="hk-card-footer">
-          <span className="hk-card-pill">{entry.creatives.length} creative{entry.creatives.length > 1 ? 's' : ''}</span>
+          <span className="hk-card-pill">
+            {entry.creatives.length} creative{entry.creatives.length > 1 ? 's' : ''}
+            <span className="hk-card-chevron">{open ? '▴' : '▾'}</span>
+          </span>
           {open && (
             <div className="hk-card-creatives">
               {entry.creatives.map((c) => (

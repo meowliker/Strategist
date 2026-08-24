@@ -65,20 +65,19 @@ export default function CreativesTable({ snapshot }: { snapshot: Snapshot }) {
     })
   }, [inView, query])
 
-  const VIEWS: { key: View; label: string; count: number }[] = [
-    { key: 'watched', label: 'Watched', count: snapshot.creatives.filter((c) => c.analysed).length },
-    {
-      key: 'winners', label: 'Winners',
-      count: new Set(
-        snapshot.creatives
-          .filter((c) => c.status === 'win' || c.status === 'mild' || c.status === 'scale')
-          .map((c) => c.taskId),
-      ).size,
-    },
-    { key: 'music', label: '🎵 Music', count: snapshot.creatives.filter((c) => c.analysed && (c.status === 'win' || c.status === 'mild' || c.status === 'scale') && isMusicStyle(c)).length },
-    { key: 'voiceover', label: '🎙 Voiceover', count: snapshot.creatives.filter((c) => c.analysed && (c.status === 'win' || c.status === 'mild' || c.status === 'scale') && isVoiceoverStyle(c)).length },
-    { key: 'all', label: 'All tasks', count: snapshot.creatives.length },
-  ]
+  const VIEWS: { key: View; label: string; count: number }[] = useMemo(() => {
+    const isWinner = (c: typeof snapshot.creatives[0]) => c.status === 'win' || c.status === 'mild' || c.status === 'scale'
+    return [
+      { key: 'watched', label: 'Watched', count: snapshot.creatives.filter((c) => c.analysed).length },
+      {
+        key: 'winners', label: 'Winners',
+        count: new Set(snapshot.creatives.filter(isWinner).map((c) => c.taskId)).size,
+      },
+      { key: 'music', label: '🎵 Music', count: snapshot.creatives.filter((c) => c.analysed && isWinner(c) && isMusicStyle(c)).length },
+      { key: 'voiceover', label: '🎙 Voiceover', count: snapshot.creatives.filter((c) => c.analysed && isWinner(c) && isVoiceoverStyle(c)).length },
+      { key: 'all', label: 'All tasks', count: snapshot.creatives.length },
+    ]
+  }, [snapshot.creatives])
 
   return (
     <>

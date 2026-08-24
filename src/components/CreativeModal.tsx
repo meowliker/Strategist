@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { searchLinks } from '../lib/data/types'
 
 interface Detail {
@@ -135,15 +135,17 @@ export default function CreativeModal({
 }: { creativeId: string | null; onClose: () => void }) {
   const [d, setD] = useState<Detail | null>(null)
   const [loading, setLoading] = useState(false)
+  const [fetchError, setFetchError] = useState(false)
   const [tab, setTab] = useState<'summary' | 'transcript' | 'compare'>('summary')
   const [copied, setCopied] = useState(false)
 
   useEffect(() => {
-    if (!creativeId) { setD(null); return }
-    setLoading(true); setTab('summary'); setCopied(false)
+    if (!creativeId) { setD(null); setFetchError(false); return }
+    setLoading(true); setTab('summary'); setCopied(false); setFetchError(false)
     fetch(`/api/creative/${creativeId}`)
-      .then((r) => (r.ok ? r.json() : null))
+      .then((r) => r.ok ? r.json() : Promise.reject(new Error(`Error ${r.status}`)))
       .then(setD)
+      .catch(() => { setD(null); setFetchError(true) })
       .finally(() => setLoading(false))
   }, [creativeId])
 
@@ -154,12 +156,33 @@ export default function CreativeModal({
   }, [onClose])
 
   const open = Boolean(creativeId)
+  const dialogRef = useRef<HTMLDivElement>(null)
+
+  // Focus trap
+  useEffect(() => {
+    if (!open) return
+    const el = dialogRef.current
+    if (!el) return
+    const focusable = el.querySelectorAll<HTMLElement>(
+      'button,a,[href],[tabindex]:not([tabindex="-1"]),input,select,textarea'
+    )
+    const first = focusable[0]
+    const last = focusable[focusable.length - 1]
+    first?.focus()
+    const trap = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab') return
+      if (e.shiftKey) { if (document.activeElement === first) { e.preventDefault(); last?.focus() } }
+      else { if (document.activeElement === last) { e.preventDefault(); first?.focus() } }
+    }
+    el.addEventListener('keydown', trap)
+    return () => el.removeEventListener('keydown', trap)
+  }, [open])
 
   return (
     <>
       <div id="mov" className={open ? 'open' : ''} onClick={onClose} />
       <div id="modal" className={open ? 'open' : ''}>
-        <div className="mdl" role="dialog" aria-modal="true" aria-label="Creative detail">
+        <div className="mdl" ref={dialogRef} role="dialog" aria-modal="true" aria-label="Creative detail">
           <div className="mdl-hd">
             <div>
               <div className="mdl-ttl">{d?.filename ?? (loading ? 'Loading…' : '')}</div>
@@ -249,7 +272,7 @@ export default function CreativeModal({
             </div>
 
             <div className="mdl-right">
-              {!d && <div className="mdl-p dim">{loading ? 'Loading…' : 'Nothing to show.'}</div>}
+              {!d && <div className="mdl-p dim">{loading ? 'Loading…' : fetchError ? 'Failed to load creative. Please try again.' : 'Nothing to show.'}</div>}
 
               {d && tab === 'summary' && (
                 <>
