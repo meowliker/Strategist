@@ -8,3 +8,7 @@ media-cache/
 *.log
 .DS_Store
 /data/
+data/competitor/*.mp4
+data/competitor/*.mov
+data/competitor/*.webm
+data/competitor/*.mkv
